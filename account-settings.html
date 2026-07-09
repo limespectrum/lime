@@ -944,6 +944,7 @@
   await setPersistence(auth, browserLocalPersistence);
 
   let currentUser = null;
+  let currentLogin = ''; // реальный логин из users/{uid}/login, кэшируется в applyUser()
 
   // ── Прячем оверлей ──
   function hideOverlay() {
@@ -952,10 +953,15 @@
     setTimeout(() => ov.style.display = 'none', 400);
   }
 
-  // ── Логин / логаут из имени ──
-  function getLoginName(email) {
-    if (!email) return '';
-    return email.split('@')[0].toUpperCase();
+  // ── Реальный логин, сохранённый при регистрации (users/{uid}/login) ──
+  // ВАЖНО: раньше логин вычислялся из email (часть до "@"), что не имело
+  // отношения к логину, который человек реально ввёл при регистрации.
+  // Теперь читаем его напрямую из базы.
+  async function loadLogin(uid) {
+    try {
+      const snap = await get(ref(db, 'users/' + uid + '/login'));
+      return snap.exists() ? snap.val() : '';
+    } catch { return ''; }
   }
 
   // ── Получить отображаемое имя из Firebase ──
@@ -979,9 +985,10 @@
 
   // ── Применить данные залогиненного пользователя на странице ──
   async function applyUser(user) {
-    const login = getLoginName(user.email);
+    const login = await loadLogin(user.uid);
+    currentLogin = login;
     const loginEl = document.getElementById('currentLoginDisplay');
-    if (loginEl) loginEl.textContent = login;
+    if (loginEl) loginEl.textContent = login || '—';
 
     const saved = await loadDisplayName(user.uid);
     const input = document.getElementById('displayNameInput');
@@ -1003,17 +1010,21 @@
     applyDisplayModeUI(mode);
     updateHeaderName(login, saved, mode);
 
-    // Резервируем логин в loginNames + выгоняем того кто занял наш логин как кастомное имя
-    try {
-      await dbSet(ref(db, 'loginNames/' + login), user.uid);
+    // Резервируем логин в loginNames (ключи в индексах хранятся в верхнем регистре,
+    // как и при регистрации) + выгоняем того кто занял наш логин как кастомное имя
+    if (login) {
+      const loginKey = login.toUpperCase();
+      try {
+        await dbSet(ref(db, 'loginNames/' + loginKey), user.uid);
 
-      const takenSnap = await get(ref(db, 'displayNames/' + login));
-      if (takenSnap.exists() && takenSnap.val() !== user.uid) {
-        const thiefUid = takenSnap.val();
-        await dbSet(ref(db, 'evictions/' + thiefUid), login);
-        await dbSet(ref(db, 'displayNames/' + login), null);
-      }
-    } catch(e) {}
+        const takenSnap = await get(ref(db, 'displayNames/' + loginKey));
+        if (takenSnap.exists() && takenSnap.val() !== user.uid) {
+          const thiefUid = takenSnap.val();
+          await dbSet(ref(db, 'evictions/' + thiefUid), login);
+          await dbSet(ref(db, 'displayNames/' + loginKey), null);
+        }
+      } catch(e) {}
+    }
     // Проверяем: не нужно ли сбросить наше собственное displayName (нас выгнали)?
     try {
       const evictSnap = await get(ref(db, 'evictions/' + user.uid));
@@ -1048,7 +1059,7 @@
     const msg = document.getElementById('displayModeMsg');
     msg.className = 'field-message';
 
-    const login = getLoginName(currentUser.email);
+    const login = currentLogin;
     const inputEl = document.getElementById('displayNameInput');
     const currentDN = inputEl ? inputEl.value.trim() : '';
 
@@ -1165,8 +1176,8 @@
         return;
       }
       // 2. Проверка по индексу логинов — защищает имена тех кто ещё не заходил в настройки
-      const myLogin = getLoginName(currentUser.email);
-      if (nameKey !== myLogin) {
+      const myLoginKey = currentLogin.toUpperCase();
+      if (nameKey !== myLoginKey) {
         const loginSnap = await get(ref(db, 'loginNames/' + nameKey));
         if (loginSnap.exists() && loginSnap.val() !== currentUser.uid) {
           msg.textContent = '✕ Это имя уже занято';
@@ -1193,7 +1204,7 @@
       await dbSet(ref(db, 'users/' + currentUser.uid + '/displayMode'), 'display');
       try { localStorage.setItem('displayMode_' + currentUser.uid, 'display'); } catch(e) {}
       applyDisplayModeUI('display');
-      updateHeaderName(getLoginName(currentUser.email), val, 'display');
+      updateHeaderName(currentLogin, val, 'display');
       msg.textContent = '✓ Сохранено';
       msg.className = 'field-message success';
     } catch {
@@ -1217,7 +1228,7 @@
       }
       await dbSet(ref(db, 'users/' + currentUser.uid + '/displayName'), null);
       input.value = '';
-      updateHeaderName(getLoginName(currentUser.email), null, 'login');
+      updateHeaderName(currentLogin, null, 'login');
       msg.textContent = '✓ Сброшено до логина';
       msg.className = 'field-message success';
     } catch {
