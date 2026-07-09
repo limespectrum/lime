@@ -459,6 +459,12 @@
     // ══════════════════════════════════════
     await setPersistence(auth, browserLocalPersistence);
 
+    // Флаг: пока идёт регистрация (создание аккаунта + запись логина в базу),
+    // общий слушатель ниже НЕ должен делать редирект сам по себе — иначе
+    // он срабатывает сразу после createUserWithEmailAndPassword и уводит
+    // со страницы раньше, чем успевает выполниться запись логина в базу.
+    let isRegistering = false;
+
     let authResolved = false;
     const authFallbackTimer = setTimeout(() => {
       if (!authResolved) {
@@ -471,7 +477,7 @@
       authResolved = true;
       clearTimeout(authFallbackTimer);
       if (user) {
-        goToApp();
+        if (!isRegistering) goToApp();
       } else {
         loadingBox.style.display = 'none';
         authBox.style.display = 'flex';
@@ -598,6 +604,7 @@
         return;
       }
 
+      isRegistering = true;
       try {
         const cred = await createUserWithEmailAndPassword(auth, email, pass);
         const uid = cred.user.uid;
@@ -616,14 +623,19 @@
         } catch (writeErr) {
           // Логин заняли за долю секунды раньше нас — аккаунт уже создан на новой почте,
           // но индекс логина занять не удалось. Сообщаем и просим попробовать другой логин.
+          isRegistering = false;
           regError.textContent = '✕ ЛОГИН ТОЛЬКО ЧТО ЗАНЯЛИ, ВЫБЕРИ ДРУГОЙ';
           shakeInputs(['regLoginInput']);
           regSubmit.disabled = false;
           regSubmit.textContent = 'СОЗДАТЬ АККАУНТ';
           return;
         }
+        // Запись логина в базу подтверждена — теперь можно безопасно
+        // пускать общий onAuthStateChanged делать редиректы.
+        isRegistering = false;
         goToApp();
       } catch (err) {
+        isRegistering = false;
         if (err.code === 'auth/email-already-in-use') {
           regError.textContent = '✕ ЭТА ПОЧТА УЖЕ ИСПОЛЬЗУЕТСЯ';
         } else if (err.code === 'auth/invalid-email') {
