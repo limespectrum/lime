@@ -17,8 +17,8 @@
     -webkit-user-select: text;
     -moz-user-select: text;
   }
-  * { cursor: default; }
-  button, .auth-submit { cursor: pointer; }
+  * { cursor: default; box-sizing: border-box; }
+  button, .auth-submit, .tab-btn, .forgot-link { cursor: pointer; }
   input, textarea { cursor: text; }
 
   html, body {
@@ -53,8 +53,8 @@
   .pin-box {
     position: relative;
     display: flex; flex-direction: column; align-items: center;
-    gap: 18px;
-    padding: 48px 52px 44px;
+    gap: 16px;
+    padding: 44px 40px 40px;
     border-radius: 24px;
     background: rgba(5, 14, 30, 0.95);
     border: 1.5px solid rgba(0,255,255,0.25);
@@ -64,7 +64,7 @@
       0 0 80px rgba(180,0,255,0.12),
       0 0 120px rgba(255,200,0,0.06),
       inset 0 1px 0 rgba(255,255,255,0.06);
-    width: min(92vw, 380px);
+    width: min(92vw, 400px);
     box-sizing: border-box;
   }
   .pin-loader {
@@ -79,7 +79,7 @@
     to { transform: rotate(360deg); }
   }
   .pin-title {
-    font-size: 1.5rem;
+    font-size: 1.4rem;
     font-weight: 900;
     letter-spacing: 5px;
     text-transform: uppercase;
@@ -97,16 +97,14 @@
     letter-spacing: 6px;
     text-transform: uppercase;
     color: rgba(150,210,255,0.45);
-    margin-top: -10px;
+    margin-top: -6px;
     user-select: none;
     -webkit-user-select: none;
     cursor: default;
     text-align: center;
   }
-  .pin-error {
-    font-size: 0.82rem; font-weight: 700; letter-spacing: 2px;
-    color: #ff4444;
-    text-shadow: 0 0 8px rgba(255,60,60,0.7);
+  .pin-error, .pin-success {
+    font-size: 0.8rem; font-weight: 700; letter-spacing: 1px;
     min-height: 20px;
     text-transform: uppercase;
     user-select: none;
@@ -114,16 +112,56 @@
     cursor: default;
     text-align: center;
   }
+  .pin-error {
+    color: #ff4444;
+    text-shadow: 0 0 8px rgba(255,60,60,0.7);
+  }
+  .pin-success {
+    color: #55e6a5;
+    text-shadow: 0 0 8px rgba(80,230,160,0.6);
+  }
+
+  /* Переключатель ВОЙТИ / РЕГИСТРАЦИЯ */
+  .tab-switch {
+    display: flex;
+    width: 100%;
+    background: rgba(0,20,45,0.6);
+    border: 1.5px solid rgba(0,255,255,0.18);
+    border-radius: 12px;
+    padding: 4px;
+    gap: 4px;
+    margin-bottom: 2px;
+  }
+  .tab-btn {
+    flex: 1;
+    border: none;
+    background: transparent;
+    color: rgba(150,210,255,0.55);
+    font-family: monospace;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 10px 6px;
+    border-radius: 8px;
+    transition: all 0.15s ease;
+  }
+  .tab-btn.active {
+    background: linear-gradient(135deg, rgba(0,238,255,0.18), rgba(204,68,255,0.18));
+    color: #fff;
+    box-shadow: 0 0 10px rgba(0,255,255,0.15), inset 0 1px 0 rgba(255,255,255,0.06);
+  }
+
   .auth-form {
     display: flex; flex-direction: column; gap: 14px;
-    width: 100%; margin: 8px 0 4px;
+    width: 100%; margin: 4px 0 0;
   }
   .auth-input {
     width: 100%;
     box-sizing: border-box;
-    height: 56px;
-    padding: 0 18px;
-    font-size: 1rem; font-weight: 700; font-family: monospace;
+    height: 54px;
+    padding: 0 16px;
+    font-size: 0.95rem; font-weight: 700; font-family: monospace;
     letter-spacing: 1px;
     border-radius: 12px;
     background: rgba(0,20,45,0.85);
@@ -136,7 +174,7 @@
   }
   .auth-input::placeholder {
     color: rgba(150,210,255,0.35);
-    letter-spacing: 4px;
+    letter-spacing: 3px;
     text-transform: uppercase;
     font-weight: 700;
   }
@@ -152,13 +190,13 @@
   }
   .auth-submit {
     width: 100%;
-    height: 56px;
+    height: 54px;
     border-radius: 14px;
     border: 1.5px solid rgba(0,255,255,0.3);
     background: linear-gradient(135deg, rgba(0,238,255,0.18), rgba(204,68,255,0.18));
     color: #fff;
-    font-size: 1rem; font-weight: 900; font-family: monospace;
-    letter-spacing: 4px;
+    font-size: 0.95rem; font-weight: 900; font-family: monospace;
+    letter-spacing: 3px;
     text-transform: uppercase;
     cursor: pointer;
     transition: all 0.12s ease;
@@ -177,6 +215,26 @@
     opacity: 0.5;
     cursor: default;
     transform: none;
+  }
+  .forgot-link {
+    text-align: center;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: rgba(150,210,255,0.55);
+    margin-top: -4px;
+    transition: color 0.15s ease;
+  }
+  .forgot-link:hover { color: rgba(0,220,255,0.9); }
+  .field-hint {
+    font-size: 0.66rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    color: rgba(150,210,255,0.35);
+    text-align: center;
+    margin-top: -8px;
+    text-transform: none;
   }
   @keyframes shake {
     0%,100%{ transform: translateX(0); }
@@ -197,21 +255,68 @@
     <div class="pin-sub">ЗАГРУЗКА...</div>
   </div>
 
-  <div class="pin-box" id="loginBox" style="display:none;">
-    <div class="pin-title">⬡ ДОСТУП ЗАКРЫТ ⬡</div>
-    <div class="pin-sub">ВХОД В СИСТЕМУ</div>
-    <div class="auth-form">
-      <input type="text" id="authEmail" class="auth-input" placeholder="НИКНЕЙМ" autocomplete="username">
-      <input type="password" id="authPass" class="auth-input" placeholder="КОД ДОСТУПА" autocomplete="current-password">
+  <div class="pin-box" id="authBox" style="display:none;">
+    <div class="pin-title">⬡ ФАРМ BP ⬡</div>
+    <div class="pin-sub" id="authSubLabel">ВХОД В СИСТЕМУ</div>
+
+    <!-- Переключатель вкладок (только для входа/регистрации) -->
+    <div class="tab-switch" id="tabSwitch">
+      <button type="button" class="tab-btn active" id="tabBtnLogin" onclick="switchView('login')">Войти в аккаунт</button>
+      <button type="button" class="tab-btn" id="tabBtnRegister" onclick="switchView('register')">Создать аккаунт</button>
     </div>
-    <div class="pin-error" id="pinError"></div>
-    <button class="auth-submit" id="authSubmit">ВОЙТИ</button>
+
+    <!-- ВОЙТИ В АККАУНТ -->
+    <div class="auth-form" id="loginForm">
+      <input type="text" id="loginIdentInput" class="auth-input" placeholder="ЛОГИН ИЛИ ПОЧТА" autocomplete="username">
+      <input type="password" id="loginPassInput" class="auth-input" placeholder="ПАРОЛЬ" autocomplete="current-password">
+      <div class="pin-error" id="loginError"></div>
+      <button type="button" class="auth-submit" id="loginSubmit">ВОЙТИ</button>
+      <div class="forgot-link" onclick="switchView('forgot')">Забыли пароль?</div>
+    </div>
+
+    <!-- СОЗДАТЬ АККАУНТ -->
+    <div class="auth-form" id="registerForm" style="display:none;">
+      <input type="text" id="regLoginInput" class="auth-input" placeholder="ЛОГИН" autocomplete="username" maxlength="20">
+      <div class="field-hint">3–20 симв., латиница/цифры/_, минимум 3 буквы</div>
+      <input type="text" id="regEmailInput" class="auth-input" placeholder="ПОЧТА" autocomplete="email">
+      <input type="password" id="regPassInput" class="auth-input" placeholder="ПАРОЛЬ" autocomplete="new-password">
+      <input type="password" id="regPass2Input" class="auth-input" placeholder="ПОВТОРИ ПАРОЛЬ" autocomplete="new-password">
+      <div class="pin-error" id="regError"></div>
+      <button type="button" class="auth-submit" id="regSubmit">СОЗДАТЬ АККАУНТ</button>
+    </div>
+
+    <!-- ЗАБЫЛИ ПАРОЛЬ -->
+    <div class="auth-form" id="forgotForm" style="display:none;">
+      <input type="text" id="forgotIdentInput" class="auth-input" placeholder="ЛОГИН ИЛИ ПОЧТА" autocomplete="username">
+      <div class="pin-error" id="forgotError"></div>
+      <div class="pin-success" id="forgotSuccess"></div>
+      <button type="button" class="auth-submit" id="forgotSubmit">ОТПРАВИТЬ ССЫЛКУ</button>
+      <div class="forgot-link" onclick="switchView('login')">← Назад ко входу</div>
+    </div>
+
+    <!-- НОВЫЙ ПАРОЛЬ (после перехода по ссылке из письма) -->
+    <div class="auth-form" id="resetForm" style="display:none;">
+      <input type="password" id="resetPassInput" class="auth-input" placeholder="НОВЫЙ ПАРОЛЬ" autocomplete="new-password">
+      <input type="password" id="resetPass2Input" class="auth-input" placeholder="ПОВТОРИ ПАРОЛЬ" autocomplete="new-password">
+      <div class="pin-error" id="resetError"></div>
+      <div class="pin-success" id="resetSuccess"></div>
+      <button type="button" class="auth-submit" id="resetSubmit">СОХРАНИТЬ ПАРОЛЬ</button>
+    </div>
   </div>
 </div>
 
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import {
+    initializeApp
+  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import {
+    getAuth, onAuthStateChanged, setPersistence, browserLocalPersistence,
+    signInWithEmailAndPassword, createUserWithEmailAndPassword,
+    sendPasswordResetEmail, verifyPasswordResetCode, confirmPasswordReset
+  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import {
+    getDatabase, ref, get, set as dbSet, update as dbUpdate
+  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyCMVd8slq6gc6lD1noTW0DDW8VkALJcZao",
@@ -225,93 +330,355 @@
 
   const authApp = initializeApp(firebaseConfig, "authApp");
   const auth = getAuth(authApp);
+  const db = getDatabase(authApp);
 
-  // Куда отправлять пользователя после успешного входа.
-  // Можно передать ?redirect=<url> в адресе страницы логина,
-  // иначе по умолчанию — главная страница сайта.
+  // ── Куда отправлять после успешного входа ──
   const DEFAULT_REDIRECT = './';
   const params = new URLSearchParams(window.location.search);
   const redirectTo = params.get('redirect') || DEFAULT_REDIRECT;
+  const mode = params.get('mode');
+  const oobCode = params.get('oobCode');
 
   function goToApp() {
     window.location.replace(redirectTo);
   }
 
-  await setPersistence(auth, browserLocalPersistence);
-  await auth.authStateReady();
+  // ── Ссылка возврата для писем восстановления пароля ──
+  // Указываем адрес этой же страницы — тогда клик по ссылке из письма
+  // вернёт пользователя сюда же с параметрами ?mode=resetPassword&oobCode=...
+  const CONTINUE_URL = window.location.origin + window.location.pathname;
+
+  // ── Ключ для email-индекса (RTDB не разрешает точки в ключах) ──
+  function emailKey(email) {
+    return email.trim().toLowerCase().replace(/[.#$\[\]]/g, (c) => (
+      { '.': '_D_', '#': '_H_', '$': '_S_', '[': '_LB_', ']': '_RB_' }[c]
+    ));
+  }
 
   const loadingBox = document.getElementById('loadingBox');
-  const loginBox = document.getElementById('loginBox');
-  const emailInput = document.getElementById('authEmail');
-  const passInput = document.getElementById('authPass');
-  const errEl = document.getElementById('pinError');
-  const submitBtn = document.getElementById('authSubmit');
+  const authBox = document.getElementById('authBox');
+  const authSubLabel = document.getElementById('authSubLabel');
+  const tabSwitch = document.getElementById('tabSwitch');
+  const tabBtnLogin = document.getElementById('tabBtnLogin');
+  const tabBtnRegister = document.getElementById('tabBtnRegister');
 
-  let authResolved = false;
+  const views = {
+    login: document.getElementById('loginForm'),
+    register: document.getElementById('registerForm'),
+    forgot: document.getElementById('forgotForm'),
+    reset: document.getElementById('resetForm')
+  };
+  const subLabels = {
+    login: 'ВХОД В СИСТЕМУ',
+    register: 'РЕГИСТРАЦИЯ',
+    forgot: 'ВОССТАНОВЛЕНИЕ ПАРОЛЯ',
+    reset: 'НОВЫЙ ПАРОЛЬ'
+  };
 
-  // Если Firebase не ответил за 5 секунд — на всякий случай показываем форму
-  const authFallbackTimer = setTimeout(() => {
-    if (!authResolved) {
-      loadingBox.style.display = 'none';
-      loginBox.style.display = 'flex';
-    }
-  }, 5000);
+  window.switchView = function(view) {
+    Object.keys(views).forEach(k => views[k].style.display = (k === view ? 'flex' : 'none'));
+    authSubLabel.textContent = subLabels[view];
+    tabSwitch.style.display = (view === 'login' || view === 'register') ? 'flex' : 'none';
+    tabBtnLogin.classList.toggle('active', view === 'login');
+    tabBtnRegister.classList.toggle('active', view === 'register');
+    clearAllErrors();
+  };
 
-  onAuthStateChanged(auth, (user) => {
-    authResolved = true;
-    clearTimeout(authFallbackTimer);
-    if (user) {
-      // Уже авторизован — сразу уходим в приложение
-      goToApp();
-    } else {
-      loadingBox.style.display = 'none';
-      loginBox.style.display = 'flex';
-    }
-  });
-
-  function clearError() {
-    errEl.textContent = '';
-    emailInput.classList.remove('error');
-    passInput.classList.remove('error');
-  }
-
-  function showError(msg) {
-    errEl.textContent = msg;
-    emailInput.classList.add('error');
-    passInput.classList.add('error');
-    setTimeout(() => {
-      emailInput.classList.remove('error');
-      passInput.classList.remove('error');
-    }, 400);
-  }
-
-  function tryLogin() {
-    let email = emailInput.value.trim();
-    const pass = passInput.value;
-    clearError();
-    if (!email || !pass) {
-      showError('✕ ЗАПОЛНИТЕ ВСЕ ПОЛЯ');
-      return;
-    }
-    if (!email.includes('@')) email = email + '@lime.ru';
-    submitBtn.disabled = true;
-    signInWithEmailAndPassword(auth, email, pass)
-      .then(() => {
-        // onAuthStateChanged выше сам сделает редирект
-      })
-      .catch(() => {
-        showError('✕ НЕВЕРНЫЙ ЛОГИН ИЛИ КОД ДОСТУПА');
-        submitBtn.disabled = false;
-      });
-  }
-
-  submitBtn.addEventListener('click', tryLogin);
-  [emailInput, passInput].forEach(el => {
-    el.addEventListener('input', clearError);
-    el.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') tryLogin();
+  function clearAllErrors() {
+    ['loginError','regError','forgotError','resetError'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = '';
     });
-  });
+    ['forgotSuccess','resetSuccess'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = '';
+    });
+  }
+
+  function shakeInputs(ids) {
+    ids.forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.classList.add('error');
+      setTimeout(() => el.classList.remove('error'), 400);
+    });
+  }
+
+  // ══════════════════════════════════════
+  //  ВЕТКА 1: возврат по ссылке восстановления пароля
+  // ══════════════════════════════════════
+  if (mode === 'resetPassword' && oobCode) {
+    loadingBox.style.display = 'none';
+    authBox.style.display = 'flex';
+    switchView('reset');
+
+    const resetSubmit = document.getElementById('resetSubmit');
+    const resetError = document.getElementById('resetError');
+    const resetSuccess = document.getElementById('resetSuccess');
+
+    verifyPasswordResetCode(auth, oobCode).catch(() => {
+      resetError.textContent = '✕ ССЫЛКА НЕДЕЙСТВИТЕЛЬНА ИЛИ УСТАРЕЛА';
+      resetSubmit.disabled = true;
+    });
+
+    resetSubmit.addEventListener('click', async () => {
+      resetError.textContent = '';
+      resetSuccess.textContent = '';
+      const p1 = document.getElementById('resetPassInput').value;
+      const p2 = document.getElementById('resetPass2Input').value;
+      if (!p1 || !p2) {
+        resetError.textContent = '✕ ЗАПОЛНИ ОБА ПОЛЯ';
+        shakeInputs(['resetPassInput','resetPass2Input']);
+        return;
+      }
+      if (p1.length < 6) {
+        resetError.textContent = '✕ МИНИМУМ 6 СИМВОЛОВ';
+        shakeInputs(['resetPassInput']);
+        return;
+      }
+      if (p1 !== p2) {
+        resetError.textContent = '✕ ПАРОЛИ НЕ СОВПАДАЮТ';
+        shakeInputs(['resetPassInput','resetPass2Input']);
+        return;
+      }
+      resetSubmit.disabled = true;
+      try {
+        await confirmPasswordReset(auth, oobCode, p1);
+        resetSuccess.textContent = '✓ ПАРОЛЬ ИЗМЕНЁН, ПЕРЕХОД КО ВХОДУ...';
+        setTimeout(() => { window.location.href = window.location.pathname; }, 1800);
+      } catch (e) {
+        resetError.textContent = '✕ ССЫЛКА НЕДЕЙСТВИТЕЛЬНА ИЛИ УСТАРЕЛА';
+        resetSubmit.disabled = false;
+      }
+    });
+
+    // Дальше в этой ветке ничего не выполняем
+  } else {
+    // ══════════════════════════════════════
+    //  ВЕТКА 2: обычный вход / регистрация
+    // ══════════════════════════════════════
+    await setPersistence(auth, browserLocalPersistence);
+
+    let authResolved = false;
+    const authFallbackTimer = setTimeout(() => {
+      if (!authResolved) {
+        loadingBox.style.display = 'none';
+        authBox.style.display = 'flex';
+      }
+    }, 5000);
+
+    onAuthStateChanged(auth, (user) => {
+      authResolved = true;
+      clearTimeout(authFallbackTimer);
+      if (user) {
+        goToApp();
+      } else {
+        loadingBox.style.display = 'none';
+        authBox.style.display = 'flex';
+      }
+    });
+
+    // ── ВОЙТИ ──
+    const loginIdentInput = document.getElementById('loginIdentInput');
+    const loginPassInput = document.getElementById('loginPassInput');
+    const loginError = document.getElementById('loginError');
+    const loginSubmit = document.getElementById('loginSubmit');
+
+    async function tryLogin() {
+      loginError.textContent = '';
+      const ident = loginIdentInput.value.trim();
+      const pass = loginPassInput.value;
+      if (!ident || !pass) {
+        loginError.textContent = '✕ ЗАПОЛНИТЕ ВСЕ ПОЛЯ';
+        shakeInputs(['loginIdentInput','loginPassInput']);
+        return;
+      }
+      loginSubmit.disabled = true;
+      let email = ident;
+      try {
+        if (!ident.includes('@')) {
+          const snap = await get(ref(db, 'loginEmails/' + ident.toUpperCase()));
+          if (!snap.exists()) {
+            loginError.textContent = '✕ НЕВЕРНЫЙ ЛОГИН ИЛИ ПАРОЛЬ';
+            shakeInputs(['loginIdentInput','loginPassInput']);
+            loginSubmit.disabled = false;
+            return;
+          }
+          email = snap.val();
+        }
+        await signInWithEmailAndPassword(auth, email, pass);
+        // onAuthStateChanged сам сделает редирект
+      } catch (e) {
+        loginError.textContent = '✕ НЕВЕРНЫЙ ЛОГИН ИЛИ ПАРОЛЬ';
+        shakeInputs(['loginIdentInput','loginPassInput']);
+        loginSubmit.disabled = false;
+      }
+    }
+    loginSubmit.addEventListener('click', tryLogin);
+    [loginIdentInput, loginPassInput].forEach(el => {
+      el.addEventListener('input', () => loginError.textContent = '');
+      el.addEventListener('keydown', (e) => { if (e.key === 'Enter') tryLogin(); });
+    });
+
+    // ── СОЗДАТЬ АККАУНТ ──
+    const regLoginInput = document.getElementById('regLoginInput');
+    const regEmailInput = document.getElementById('regEmailInput');
+    const regPassInput = document.getElementById('regPassInput');
+    const regPass2Input = document.getElementById('regPass2Input');
+    const regError = document.getElementById('regError');
+    const regSubmit = document.getElementById('regSubmit');
+
+    async function tryRegister() {
+      regError.textContent = '';
+      const login = regLoginInput.value.trim();
+      const email = regEmailInput.value.trim().toLowerCase();
+      const pass = regPassInput.value;
+      const pass2 = regPass2Input.value;
+
+      if (!login || !email || !pass || !pass2) {
+        regError.textContent = '✕ ЗАПОЛНИТЕ ВСЕ ПОЛЯ';
+        return;
+      }
+      if (!/^[A-Za-z0-9_]{3,20}$/.test(login)) {
+        regError.textContent = '✕ ЛОГИН: 3–20 СИМВ., ЛАТИНИЦА/ЦИФРЫ/_';
+        shakeInputs(['regLoginInput']);
+        return;
+      }
+      if ((login.match(/[A-Za-z]/g) || []).length < 3) {
+        regError.textContent = '✕ МИНИМУМ 3 БУКВЫ В ЛОГИНЕ';
+        shakeInputs(['regLoginInput']);
+        return;
+      }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        regError.textContent = '✕ НЕВЕРНЫЙ ФОРМАТ ПОЧТЫ';
+        shakeInputs(['regEmailInput']);
+        return;
+      }
+      if (pass.length < 6) {
+        regError.textContent = '✕ ПАРОЛЬ: МИНИМУМ 6 СИМВОЛОВ';
+        shakeInputs(['regPassInput']);
+        return;
+      }
+      if (pass !== pass2) {
+        regError.textContent = '✕ ПАРОЛИ НЕ СОВПАДАЮТ';
+        shakeInputs(['regPassInput','regPass2Input']);
+        return;
+      }
+
+      const loginKey = login.toUpperCase();
+      const eKey = emailKey(email);
+
+      regSubmit.disabled = true;
+      regSubmit.textContent = '...';
+
+      try {
+        const [loginSnap, dispSnap, emailSnap] = await Promise.all([
+          get(ref(db, 'loginNames/' + loginKey)),
+          get(ref(db, 'displayNames/' + loginKey)),
+          get(ref(db, 'emails/' + eKey))
+        ]);
+        if (loginSnap.exists() || dispSnap.exists()) {
+          regError.textContent = '✕ ЭТОТ ЛОГИН УЖЕ ЗАНЯТ';
+          shakeInputs(['regLoginInput']);
+          regSubmit.disabled = false;
+          regSubmit.textContent = 'СОЗДАТЬ АККАУНТ';
+          return;
+        }
+        if (emailSnap.exists()) {
+          regError.textContent = '✕ ЭТА ПОЧТА УЖЕ ИСПОЛЬЗУЕТСЯ';
+          shakeInputs(['regEmailInput']);
+          regSubmit.disabled = false;
+          regSubmit.textContent = 'СОЗДАТЬ АККАУНТ';
+          return;
+        }
+      } catch (e) {
+        regError.textContent = '✕ ОШИБКА ПРОВЕРКИ, ПОПРОБУЙ ЕЩЁ РАЗ';
+        regSubmit.disabled = false;
+        regSubmit.textContent = 'СОЗДАТЬ АККАУНТ';
+        return;
+      }
+
+      try {
+        const cred = await createUserWithEmailAndPassword(auth, email, pass);
+        const uid = cred.user.uid;
+        try {
+          // Один атомарный multi-path update — важно для правил безопасности:
+          // loginEmails можно записать только если loginNames в этой же записи
+          // уже принадлежит нам, а при раздельных set() это иногда ловило бы
+          // ошибку доступа из-за порядка выполнения запросов.
+          const updates = {};
+          updates['users/' + uid + '/login'] = login;
+          updates['users/' + uid + '/email'] = email;
+          updates['loginNames/' + loginKey] = uid;
+          updates['loginEmails/' + loginKey] = email;
+          updates['emails/' + eKey] = uid;
+          await dbUpdate(ref(db), updates);
+        } catch (writeErr) {
+          // Логин заняли за долю секунды раньше нас — аккаунт уже создан на новой почте,
+          // но индекс логина занять не удалось. Сообщаем и просим попробовать другой логин.
+          regError.textContent = '✕ ЛОГИН ТОЛЬКО ЧТО ЗАНЯЛИ, ВЫБЕРИ ДРУГОЙ';
+          shakeInputs(['regLoginInput']);
+          regSubmit.disabled = false;
+          regSubmit.textContent = 'СОЗДАТЬ АККАУНТ';
+          return;
+        }
+        goToApp();
+      } catch (err) {
+        if (err.code === 'auth/email-already-in-use') {
+          regError.textContent = '✕ ЭТА ПОЧТА УЖЕ ИСПОЛЬЗУЕТСЯ';
+        } else if (err.code === 'auth/invalid-email') {
+          regError.textContent = '✕ НЕВЕРНЫЙ ФОРМАТ ПОЧТЫ';
+        } else if (err.code === 'auth/weak-password') {
+          regError.textContent = '✕ СЛИШКОМ ПРОСТОЙ ПАРОЛЬ';
+        } else {
+          regError.textContent = '✕ ОШИБКА: ' + err.code;
+        }
+        regSubmit.disabled = false;
+        regSubmit.textContent = 'СОЗДАТЬ АККАУНТ';
+      }
+    }
+    regSubmit.addEventListener('click', tryRegister);
+    [regLoginInput, regEmailInput, regPassInput, regPass2Input].forEach(el => {
+      el.addEventListener('input', () => regError.textContent = '');
+      el.addEventListener('keydown', (e) => { if (e.key === 'Enter') tryRegister(); });
+    });
+
+    // ── ЗАБЫЛИ ПАРОЛЬ ──
+    const forgotIdentInput = document.getElementById('forgotIdentInput');
+    const forgotError = document.getElementById('forgotError');
+    const forgotSuccess = document.getElementById('forgotSuccess');
+    const forgotSubmit = document.getElementById('forgotSubmit');
+
+    async function tryForgot() {
+      forgotError.textContent = '';
+      forgotSuccess.textContent = '';
+      const ident = forgotIdentInput.value.trim();
+      if (!ident) {
+        forgotError.textContent = '✕ ВВЕДИ ЛОГИН ИЛИ ПОЧТУ';
+        shakeInputs(['forgotIdentInput']);
+        return;
+      }
+      forgotSubmit.disabled = true;
+      let email = ident;
+      try {
+        if (!ident.includes('@')) {
+          const snap = await get(ref(db, 'loginEmails/' + ident.toUpperCase()));
+          if (snap.exists()) email = snap.val();
+          else email = null;
+        }
+        if (email) {
+          await sendPasswordResetEmail(auth, email, { url: CONTINUE_URL });
+        }
+      } catch (e) {
+        // Намеренно не показываем, что аккаунт не найден — не палим базу пользователей
+      }
+      forgotSuccess.textContent = '✓ ЕСЛИ АККАУНТ НАЙДЕН — ССЫЛКА ОТПРАВЛЕНА НА ПОЧТУ';
+      forgotSubmit.disabled = false;
+    }
+    forgotSubmit.addEventListener('click', tryForgot);
+    forgotIdentInput.addEventListener('input', () => { forgotError.textContent = ''; forgotSuccess.textContent = ''; });
+    forgotIdentInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') tryForgot(); });
+  }
 </script>
 </body>
 </html>
