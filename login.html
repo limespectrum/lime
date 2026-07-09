@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="ru" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="color-scheme" content="dark">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Вход — ФАРМ BP</title>
+<link rel="icon" type="image/png" href="https://psv4.userapi.com/s/v1/d2/OS1XuRQbrcwb45XOpQZ3lzZEOnFKmLQhQ-QIga0mxOtLC5nKBS-kWnJ4x13j3wIbtya2vNiAuhxKZg_F5n4RcOzLh3SCJCCNgw4scYil3cy3L8SN2IfuZDqEepVggECnhAAh-t7wuWh8/LIME_COIN.png">
+<style>
+  *, *::before, *::after {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+  }
+  input, textarea {
+    user-select: text;
+    -webkit-user-select: text;
+    -moz-user-select: text;
+  }
+  * { cursor: default; }
+  button, .auth-submit { cursor: pointer; }
+  input, textarea { cursor: text; }
+
+  html, body {
+    margin: 0;
+    height: 100%;
+    background: #050d1a;
+    font-family: system-ui, -apple-system, Roboto, Arial, sans-serif;
+    color: #e5e7eb;
+  }
+
+  #pinOverlay {
+    position: fixed; inset: 0; z-index: 9999;
+    background: #050d1a;
+    display: flex; align-items: center; justify-content: center;
+    user-select: none;
+    -webkit-user-select: none;
+    pointer-events: all;
+  }
+  .pin-bg {
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse 60% 40% at 20% 30%, rgba(0,255,255,0.07) 0%, transparent 70%),
+      radial-gradient(ellipse 50% 60% at 80% 70%, rgba(180,0,255,0.07) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 40% at 50% 50%, rgba(255,200,0,0.04) 0%, transparent 70%);
+    animation: bgShift 6s ease-in-out infinite alternate;
+    pointer-events: all;
+  }
+  @keyframes bgShift {
+    0%   { opacity: 0.7; }
+    100% { opacity: 1; }
+  }
+  .pin-box {
+    position: relative;
+    display: flex; flex-direction: column; align-items: center;
+    gap: 18px;
+    padding: 48px 52px 44px;
+    border-radius: 24px;
+    background: rgba(5, 14, 30, 0.95);
+    border: 1.5px solid rgba(0,255,255,0.25);
+    box-shadow:
+      0 0 0 1px rgba(0,255,255,0.15),
+      0 0 40px rgba(0,255,255,0.18),
+      0 0 80px rgba(180,0,255,0.12),
+      0 0 120px rgba(255,200,0,0.06),
+      inset 0 1px 0 rgba(255,255,255,0.06);
+    width: min(92vw, 380px);
+    box-sizing: border-box;
+  }
+  .pin-loader {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: 3px solid rgba(0,255,255,0.18);
+    border-top-color: rgba(0,220,255,0.85);
+    animation: pinSpin 0.9s linear infinite;
+  }
+  @keyframes pinSpin {
+    to { transform: rotate(360deg); }
+  }
+  .pin-title {
+    font-size: 1.5rem;
+    font-weight: 900;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    background: linear-gradient(135deg, #00eeff, #cc44ff, #ffdd00);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    filter: drop-shadow(0 0 10px rgba(0,220,255,0.6));
+    user-select: none;
+    -webkit-user-select: none;
+    cursor: default;
+    text-align: center;
+  }
+  .pin-sub {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    color: rgba(150,210,255,0.45);
+    margin-top: -10px;
+    user-select: none;
+    -webkit-user-select: none;
+    cursor: default;
+    text-align: center;
+  }
+  .pin-error {
+    font-size: 0.82rem; font-weight: 700; letter-spacing: 2px;
+    color: #ff4444;
+    text-shadow: 0 0 8px rgba(255,60,60,0.7);
+    min-height: 20px;
+    text-transform: uppercase;
+    user-select: none;
+    -webkit-user-select: none;
+    cursor: default;
+    text-align: center;
+  }
+  .auth-form {
+    display: flex; flex-direction: column; gap: 14px;
+    width: 100%; margin: 8px 0 4px;
+  }
+  .auth-input {
+    width: 100%;
+    box-sizing: border-box;
+    height: 56px;
+    padding: 0 18px;
+    font-size: 1rem; font-weight: 700; font-family: monospace;
+    letter-spacing: 1px;
+    border-radius: 12px;
+    background: rgba(0,20,45,0.85);
+    border: 2px solid rgba(0,255,255,0.2);
+    color: #00eeff;
+    text-shadow: 0 0 8px rgba(0,220,255,0.5);
+    box-shadow: inset 0 0 12px rgba(0,255,255,0.06);
+    transition: all 0.15s ease;
+    outline: none;
+  }
+  .auth-input::placeholder {
+    color: rgba(150,210,255,0.35);
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+  .auth-input:focus {
+    border-color: rgba(0,255,255,0.55);
+    color: #fff;
+    text-shadow: 0 0 14px rgba(0,220,255,0.9);
+    box-shadow: inset 0 0 16px rgba(0,255,255,0.12), 0 0 12px rgba(0,200,255,0.25);
+  }
+  .auth-input.error {
+    border-color: rgba(255,60,60,0.8) !important;
+    animation: shake 0.4s ease;
+  }
+  .auth-submit {
+    width: 100%;
+    height: 56px;
+    border-radius: 14px;
+    border: 1.5px solid rgba(0,255,255,0.3);
+    background: linear-gradient(135deg, rgba(0,238,255,0.18), rgba(204,68,255,0.18));
+    color: #fff;
+    font-size: 1rem; font-weight: 900; font-family: monospace;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.12s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05);
+  }
+  .auth-submit:hover {
+    background: linear-gradient(135deg, rgba(0,238,255,0.3), rgba(204,68,255,0.3));
+    border-color: rgba(0,255,255,0.6);
+    box-shadow: 0 0 14px rgba(0,255,255,0.25), inset 0 1px 0 rgba(255,255,255,0.08);
+    transform: translateY(-2px);
+  }
+  .auth-submit:active {
+    transform: scale(0.97);
+  }
+  .auth-submit:disabled {
+    opacity: 0.5;
+    cursor: default;
+    transform: none;
+  }
+  @keyframes shake {
+    0%,100%{ transform: translateX(0); }
+    20%    { transform: translateX(-8px); }
+    40%    { transform: translateX(8px); }
+    60%    { transform: translateX(-6px); }
+    80%    { transform: translateX(6px); }
+  }
+</style>
+</head>
+<body>
+
+<div id="pinOverlay">
+  <div class="pin-bg"></div>
+
+  <div class="pin-box" id="loadingBox">
+    <div class="pin-loader"></div>
+    <div class="pin-sub">ЗАГРУЗКА...</div>
+  </div>
+
+  <div class="pin-box" id="loginBox" style="display:none;">
+    <div class="pin-title">⬡ ДОСТУП ЗАКРЫТ ⬡</div>
+    <div class="pin-sub">ВХОД В СИСТЕМУ</div>
+    <div class="auth-form">
+      <input type="text" id="authEmail" class="auth-input" placeholder="НИКНЕЙМ" autocomplete="username">
+      <input type="password" id="authPass" class="auth-input" placeholder="КОД ДОСТУПА" autocomplete="current-password">
+    </div>
+    <div class="pin-error" id="pinError"></div>
+    <button class="auth-submit" id="authSubmit">ВОЙТИ</button>
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCMVd8slq6gc6lD1noTW0DDW8VkALJcZao",
+    authDomain: "bonuspoint-lime.firebaseapp.com",
+    databaseURL: "https://bonuspoint-lime-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "bonuspoint-lime",
+    storageBucket: "bonuspoint-lime.firebasestorage.app",
+    messagingSenderId: "647315774952",
+    appId: "1:647315774952:web:b8269372e8abf5d97f185d"
+  };
+
+  const authApp = initializeApp(firebaseConfig, "authApp");
+  const auth = getAuth(authApp);
+
+  // Куда отправлять пользователя после успешного входа.
+  // Можно передать ?redirect=<url> в адресе страницы логина,
+  // иначе по умолчанию — главная страница сайта.
+  const DEFAULT_REDIRECT = './';
+  const params = new URLSearchParams(window.location.search);
+  const redirectTo = params.get('redirect') || DEFAULT_REDIRECT;
+
+  function goToApp() {
+    window.location.replace(redirectTo);
+  }
+
+  await setPersistence(auth, browserLocalPersistence);
+  await auth.authStateReady();
+
+  const loadingBox = document.getElementById('loadingBox');
+  const loginBox = document.getElementById('loginBox');
+  const emailInput = document.getElementById('authEmail');
+  const passInput = document.getElementById('authPass');
+  const errEl = document.getElementById('pinError');
+  const submitBtn = document.getElementById('authSubmit');
+
+  let authResolved = false;
+
+  // Если Firebase не ответил за 5 секунд — на всякий случай показываем форму
+  const authFallbackTimer = setTimeout(() => {
+    if (!authResolved) {
+      loadingBox.style.display = 'none';
+      loginBox.style.display = 'flex';
+    }
+  }, 5000);
+
+  onAuthStateChanged(auth, (user) => {
+    authResolved = true;
+    clearTimeout(authFallbackTimer);
+    if (user) {
+      // Уже авторизован — сразу уходим в приложение
+      goToApp();
+    } else {
+      loadingBox.style.display = 'none';
+      loginBox.style.display = 'flex';
+    }
+  });
+
+  function clearError() {
+    errEl.textContent = '';
+    emailInput.classList.remove('error');
+    passInput.classList.remove('error');
+  }
+
+  function showError(msg) {
+    errEl.textContent = msg;
+    emailInput.classList.add('error');
+    passInput.classList.add('error');
+    setTimeout(() => {
+      emailInput.classList.remove('error');
+      passInput.classList.remove('error');
+    }, 400);
+  }
+
+  function tryLogin() {
+    let email = emailInput.value.trim();
+    const pass = passInput.value;
+    clearError();
+    if (!email || !pass) {
+      showError('✕ ЗАПОЛНИТЕ ВСЕ ПОЛЯ');
+      return;
+    }
+    if (!email.includes('@')) email = email + '@lime.ru';
+    submitBtn.disabled = true;
+    signInWithEmailAndPassword(auth, email, pass)
+      .then(() => {
+        // onAuthStateChanged выше сам сделает редирект
+      })
+      .catch(() => {
+        showError('✕ НЕВЕРНЫЙ ЛОГИН ИЛИ КОД ДОСТУПА');
+        submitBtn.disabled = false;
+      });
+  }
+
+  submitBtn.addEventListener('click', tryLogin);
+  [emailInput, passInput].forEach(el => {
+    el.addEventListener('input', clearError);
+    el.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') tryLogin();
+    });
+  });
+</script>
+</body>
+</html>
