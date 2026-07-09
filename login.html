@@ -609,17 +609,38 @@
         const cred = await createUserWithEmailAndPassword(auth, email, pass);
         const uid = cred.user.uid;
         try {
-          // Один атомарный multi-path update — важно для правил безопасности:
-          // loginEmails можно записать только если loginNames в этой же записи
-          // уже принадлежит нам, а при раздельных set() это иногда ловило бы
-          // ошибку доступа из-за порядка выполнения запросов.
-          const updates = {};
-          updates['users/' + uid + '/login'] = login;
-          updates['users/' + uid + '/email'] = email;
-          updates['loginNames/' + loginKey] = uid;
-          updates['loginEmails/' + loginKey] = email;
-          updates['emails/' + eKey] = uid;
-          await dbUpdate(ref(db), updates);
+          // ВАЖНО: правило записи в loginEmails/{login} требует, чтобы
+          // root.child('loginNames/' + login) УЖЕ равнялся auth.uid НА МОМЕНТ
+          // проверки правила. Если писать loginNames и loginEmails одним общим
+          // multi-path update(), для совершенно нового логина loginNames в эту
+          // секунду ещё не существует в БД — правило не проходит гарантированно,
+          // не только в случае гонки. Поэтому делаем два ПОСЛЕДОВАТЕЛЬНЫХ шага:
+          // сначала фиксируем loginNames (+ остальное), и только когда сервер
+          // подтвердил эту запись, пишем loginEmails вторым запросом — тогда
+          // root уже точно видит его.
+          const step1 = {};
+          step1['users/' + uid + '/login'] = login;
+          step1['users/' + uid + '/email'] = email;
+          step1['loginNames/' + loginKey] = uid;
+          step1['emails/' + eKey] = uid;
+          await dbUpdate(ref(db), step1);
+
+          try {
+            await dbSet(ref(db, 'loginEmails/' + loginKey), email);
+          } catch (step2Err) {
+            // Первый шаг прошёл, а второй — нет. Откатываем то, что успели
+            // записать на первом шаге, чтобы не оставить "половинчатую" запись.
+            try {
+              const rollback = {};
+              rollback['users/' + uid] = null;
+              rollback['loginNames/' + loginKey] = null;
+              rollback['emails/' + eKey] = null;
+              await dbUpdate(ref(db), rollback);
+            } catch (rbErr) {
+              console.error('Не удалось откатить частичную запись после сбоя шага 2:', rbErr);
+            }
+            throw step2Err;
+          }
         } catch (writeErr) {
           // Логин заняли за долю секунды раньше нас — аккаунт уже создан на новой почте,
           // но индекс логина занять не удалось.
