@@ -2686,10 +2686,17 @@ body.char2-active .filter-btn.active[data-col="col-fraction"]:hover {
 
   document.body.style.overflow = 'hidden';
 
-  function getDisplayName(email) {
-    if (!email) return '';
-    const local = email.split('@')[0].toUpperCase();
-    return local;
+  // ── Реальный логин, сохранённый при регистрации (users/{uid}/login) ──
+  // Раньше логин в шапке вычислялся из email (часть до "@"), но при переходе
+  // на новую систему авторизации email может отсутствовать/не совпадать
+  // с логином, поэтому читаем логин напрямую из базы. Фоллбек на старую
+  // email-схему оставлен только на случай, если запись login ещё не создана.
+  async function loadLogin(uid, email) {
+    try {
+      const snap = await get(ref(db, 'users/' + uid + '/login'));
+      if (snap.exists() && snap.val()) return snap.val();
+    } catch(e) {}
+    return email ? email.split('@')[0].toUpperCase() : '';
   }
 
   // Фоллбек: если Firebase не ответил за 5 секунд — уходим на страницу входа
@@ -2713,7 +2720,8 @@ body.char2-active .filter-btn.active[data-col="col-fraction"]:hover {
     clearTimeout(authFallbackTimer);
     if (user) {
       const nameEl = document.getElementById('userNameDisplay');
-      if (nameEl) nameEl.textContent = getDisplayName(user.email);
+      const login = await loadLogin(user.uid, user.email);
+      if (nameEl) nameEl.textContent = login || '—';
       currentUid = user.uid;
       try {
         const hadCloud = await pullStateFromCloud(user.uid);
@@ -2723,62 +2731,10 @@ body.char2-active .filter-btn.active[data-col="col-fraction"]:hover {
           pushStateToCloud();
         }
       } catch(e) {}
-      // Подгружаем кастомное имя персонажа из базы (если задано в настройках)
-      // и учитываем выбранный режим отображения (логин / отображаемое имя).
-      // Подписка в реальном времени — шапка обновится сразу, даже если режим
-      // меняется в другой вкладке (например, на странице настроек аккаунта).
-      let _hdrDn = null;
-      let _hdrMode = 'login';
+      // Резервируем логин в loginNames (индекс хранится в верхнем регистре)
       try {
-        const local = localStorage.getItem('displayMode_' + user.uid);
-        if (local === 'display') _hdrMode = 'display';
-      } catch(e) {}
-
-      function _refreshHeaderName() {
-        if (nameEl) {
-          nameEl.textContent = (_hdrMode === 'display' && _hdrDn) ? _hdrDn.toUpperCase() : getDisplayName(user.email);
-        }
-      }
-
-      try {
-        onValue(ref(db, 'users/' + user.uid + '/displayName'), (snap) => {
-          _hdrDn = snap.exists() ? snap.val() : null;
-          _refreshHeaderName();
-        });
-        onValue(ref(db, 'users/' + user.uid + '/displayMode'), (snap) => {
-          if (snap.exists()) {
-            _hdrMode = snap.val();
-          } else {
-            try {
-              const local = localStorage.getItem('displayMode_' + user.uid);
-              _hdrMode = (local === 'display') ? 'display' : 'login';
-            } catch(e) { _hdrMode = 'login'; }
-          }
-          _refreshHeaderName();
-        });
-      } catch(e) {}
-      // Резервируем логин в loginNames + выгоняем того кто занял наш логин как кастомное имя
-      try {
-        const loginKey = getDisplayName(user.email);
-        await dbSet(ref(db, 'loginNames/' + loginKey), user.uid);
-
-        // Проверяем: не занял ли кто-то наш логин как displayName?
-        const takenSnap = await get(ref(db, 'displayNames/' + loginKey));
-        if (takenSnap.exists() && takenSnap.val() !== user.uid) {
-          const thiefUid = takenSnap.val();
-          await dbSet(ref(db, 'evictions/' + thiefUid), loginKey);
-          await dbSet(ref(db, 'displayNames/' + loginKey), null);
-        }
-      } catch(e) {}
-      // Проверяем: не нужно ли сбросить наше собственное displayName (нас выгнали)?
-      try {
-        const evictSnap = await get(ref(db, 'evictions/' + user.uid));
-        if (evictSnap.exists()) {
-          // Сбрасываем своё displayName
-          await dbSet(ref(db, 'users/' + user.uid + '/displayName'), null);
-          await dbSet(ref(db, 'evictions/' + user.uid), null);
-          // Обновляем отображение
-          if (nameEl) nameEl.textContent = getDisplayName(user.email);
+        if (login) {
+          await dbSet(ref(db, 'loginNames/' + login.toUpperCase()), user.uid);
         }
       } catch(e) {}
       // Скрываем оверлей — всегда, даже если что-то пошло не так
@@ -4722,9 +4678,14 @@ body.char2-active .oum-footer-hint {
   const auth = getAuth(app);
   const onlineRef = ref(db, 'online');
 
-  function getNick(email) {
-    if (!email) return '???';
-    return email.split('@')[0].toUpperCase();
+  // Ник для списка "онлайн" — читаем реальный логин из базы (users/{uid}/login),
+  // с фоллбеком на старую email-схему для записей без сохранённого логина.
+  async function getNick(uid, email) {
+    try {
+      const snap = await get(ref(db, 'users/' + uid + '/login'));
+      if (snap.exists() && snap.val()) return snap.val();
+    } catch(e) {}
+    return email ? email.split('@')[0].toUpperCase() : '???';
   }
 
   function updateTooltip(snapshot) {
@@ -4783,22 +4744,12 @@ body.char2-active .oum-footer-hint {
   const sessionId = Math.random().toString(36).slice(2, 9);
 
   // Регистрируем себя по UID_sessionId (одна запись на вкладку, дедупликация в UI)
-  // Ник пересчитывается и обновляется в реальном времени при любом изменении
-  // displayName / displayMode — не только при логине/перезагрузке страницы.
   let _onlineUid = null;
-  let _onlineDn = null;
-  let _onlineMode = 'login';
   let _onlineUserRef = null;
-
-  function _localMode(uid) {
-    try {
-      return localStorage.getItem('displayMode_' + uid) === 'display' ? 'display' : null;
-    } catch(e) { return null; }
-  }
 
   async function _refreshOnlineNick(user) {
     if (!_onlineUserRef) return;
-    const nick = (_onlineMode === 'display' && _onlineDn) ? _onlineDn : getNick(user.email);
+    const nick = await getNick(user.uid, user.email);
     try {
       await set(_onlineUserRef, { nick, uid: user.uid, t: serverTimestamp() });
     } catch(e) {}
@@ -4810,27 +4761,7 @@ body.char2-active .oum-footer-hint {
     _onlineUid = uid;
     _onlineUserRef = ref(db, `online/${uid}/${sessionId}`);
     onDisconnect(_onlineUserRef).remove();
-
-    // Базовое значение, на случай если данных в Firebase ещё нет
-    _onlineMode = _localMode(uid) || 'login';
-
-    // Флаги: ждём оба значения перед первой записью ника, чтобы не было гонки
-    let _dnLoaded = false;
-    let _modeLoaded = false;
-
-    // Подписка на displayName в реальном времени
-    onValue(ref(db, 'users/' + uid + '/displayName'), (snap) => {
-      _onlineDn = (snap.exists() && snap.val()) ? snap.val() : null;
-      _dnLoaded = true;
-      if (_dnLoaded && _modeLoaded) _refreshOnlineNick(user);
-    });
-
-    // Подписка на displayMode в реальном времени
-    onValue(ref(db, 'users/' + uid + '/displayMode'), (snap) => {
-      _onlineMode = snap.exists() ? snap.val() : (_localMode(uid) || 'login');
-      _modeLoaded = true;
-      if (_dnLoaded && _modeLoaded) _refreshOnlineNick(user);
-    });
+    _refreshOnlineNick(user);
   });
 </script>
 
