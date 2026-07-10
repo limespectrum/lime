@@ -243,6 +243,29 @@
     60%    { transform: translateX(-6px); }
     80%    { transform: translateX(6px); }
   }
+
+  /* Обёртка поля пароля с глазиком (показать/скрыть) */
+  .pass-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+  .pass-wrapper .auth-input {
+    padding-right: 46px;
+  }
+  .pass-toggle {
+    position: absolute;
+    right: 14px;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    color: rgba(150,210,255,0.45);
+    display: flex;
+    align-items: center;
+    transition: color 0.18s;
+  }
+  .pass-toggle:hover { color: rgba(0,220,255,0.85); }
 </style>
 </head>
 <body>
@@ -268,7 +291,16 @@
     <!-- ВОЙТИ В АККАУНТ -->
     <div class="auth-form" id="loginForm">
       <input type="text" id="loginIdentInput" class="auth-input" placeholder="ЛОГИН ИЛИ ПОЧТА" autocomplete="username">
-      <input type="password" id="loginPassInput" class="auth-input" placeholder="ПАРОЛЬ" autocomplete="current-password">
+      <div class="pass-wrapper">
+        <input type="password" id="loginPassInput" class="auth-input" placeholder="ПАРОЛЬ" autocomplete="current-password">
+        <button type="button" class="pass-toggle" onclick="togglePass('loginPassInput', this)" tabindex="-1">
+          <svg class="eye-icon" width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M1 9C1 9 3.5 3.5 9 3.5S17 9 17 9s-2.5 5.5-8 5.5S1 9 1 9Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+            <circle cx="9" cy="9" r="2.2" stroke="currentColor" stroke-width="1.4"/>
+            <line class="eye-slash" x1="2" y1="2" x2="16" y2="16" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" style="display:none"/>
+          </svg>
+        </button>
+      </div>
       <div class="pin-error" id="loginError"></div>
       <button type="button" class="auth-submit" id="loginSubmit">ВОЙТИ</button>
       <div class="forgot-link" onclick="switchView('forgot')">Забыли пароль?</div>
@@ -279,8 +311,26 @@
       <input type="text" id="regLoginInput" class="auth-input" placeholder="ЛОГИН" autocomplete="username" maxlength="20">
       <div class="field-hint">3–20 симв., латиница/цифры/_, минимум 3 буквы</div>
       <input type="text" id="regEmailInput" class="auth-input" placeholder="ПОЧТА" autocomplete="email">
-      <input type="password" id="regPassInput" class="auth-input" placeholder="ПАРОЛЬ" autocomplete="new-password">
-      <input type="password" id="regPass2Input" class="auth-input" placeholder="ПОВТОРИ ПАРОЛЬ" autocomplete="new-password">
+      <div class="pass-wrapper">
+        <input type="password" id="regPassInput" class="auth-input" placeholder="ПАРОЛЬ" autocomplete="new-password">
+        <button type="button" class="pass-toggle" onclick="togglePass('regPassInput', this)" tabindex="-1">
+          <svg class="eye-icon" width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M1 9C1 9 3.5 3.5 9 3.5S17 9 17 9s-2.5 5.5-8 5.5S1 9 1 9Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+            <circle cx="9" cy="9" r="2.2" stroke="currentColor" stroke-width="1.4"/>
+            <line class="eye-slash" x1="2" y1="2" x2="16" y2="16" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" style="display:none"/>
+          </svg>
+        </button>
+      </div>
+      <div class="pass-wrapper">
+        <input type="password" id="regPass2Input" class="auth-input" placeholder="ПОВТОРИ ПАРОЛЬ" autocomplete="new-password">
+        <button type="button" class="pass-toggle" onclick="togglePass('regPass2Input', this)" tabindex="-1">
+          <svg class="eye-icon" width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M1 9C1 9 3.5 3.5 9 3.5S17 9 17 9s-2.5 5.5-8 5.5S1 9 1 9Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+            <circle cx="9" cy="9" r="2.2" stroke="currentColor" stroke-width="1.4"/>
+            <line class="eye-slash" x1="2" y1="2" x2="16" y2="16" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" style="display:none"/>
+          </svg>
+        </button>
+      </div>
       <div class="pin-error" id="regError"></div>
       <button type="button" class="auth-submit" id="regSubmit">СОЗДАТЬ АККАУНТ</button>
     </div>
@@ -296,8 +346,26 @@
 
     <!-- НОВЫЙ ПАРОЛЬ (после перехода по ссылке из письма) -->
     <div class="auth-form" id="resetForm" style="display:none;">
-      <input type="password" id="resetPassInput" class="auth-input" placeholder="НОВЫЙ ПАРОЛЬ" autocomplete="new-password">
-      <input type="password" id="resetPass2Input" class="auth-input" placeholder="ПОВТОРИ ПАРОЛЬ" autocomplete="new-password">
+      <div class="pass-wrapper">
+        <input type="password" id="resetPassInput" class="auth-input" placeholder="НОВЫЙ ПАРОЛЬ" autocomplete="new-password">
+        <button type="button" class="pass-toggle" onclick="togglePass('resetPassInput', this)" tabindex="-1">
+          <svg class="eye-icon" width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M1 9C1 9 3.5 3.5 9 3.5S17 9 17 9s-2.5 5.5-8 5.5S1 9 1 9Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+            <circle cx="9" cy="9" r="2.2" stroke="currentColor" stroke-width="1.4"/>
+            <line class="eye-slash" x1="2" y1="2" x2="16" y2="16" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" style="display:none"/>
+          </svg>
+        </button>
+      </div>
+      <div class="pass-wrapper">
+        <input type="password" id="resetPass2Input" class="auth-input" placeholder="ПОВТОРИ ПАРОЛЬ" autocomplete="new-password">
+        <button type="button" class="pass-toggle" onclick="togglePass('resetPass2Input', this)" tabindex="-1">
+          <svg class="eye-icon" width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M1 9C1 9 3.5 3.5 9 3.5S17 9 17 9s-2.5 5.5-8 5.5S1 9 1 9Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+            <circle cx="9" cy="9" r="2.2" stroke="currentColor" stroke-width="1.4"/>
+            <line class="eye-slash" x1="2" y1="2" x2="16" y2="16" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" style="display:none"/>
+          </svg>
+        </button>
+      </div>
       <div class="pin-error" id="resetError"></div>
       <div class="pin-success" id="resetSuccess"></div>
       <button type="button" class="auth-submit" id="resetSubmit">СОХРАНИТЬ ПАРОЛЬ</button>
@@ -373,6 +441,21 @@
     register: 'РЕГИСТРАЦИЯ',
     forgot: 'ВОССТАНОВЛЕНИЕ ПАРОЛЯ',
     reset: 'НОВЫЙ ПАРОЛЬ'
+  };
+
+  // ── Показать/скрыть пароль ──
+  window.togglePass = function(inputId, btn) {
+    const input = document.getElementById(inputId);
+    const slash = btn.querySelector('.eye-slash');
+    if (input.type === 'password') {
+      input.type = 'text';
+      slash.style.display = '';
+      btn.style.color = 'rgba(0,220,255,0.85)';
+    } else {
+      input.type = 'password';
+      slash.style.display = 'none';
+      btn.style.color = '';
+    }
   };
 
   window.switchView = function(view) {
