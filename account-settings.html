@@ -596,39 +596,6 @@
     to { opacity: 0; pointer-events: none; }
   }
 
-  /* Display mode toggle */
-  .display-mode-toggle {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-  }
-  .mode-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    background: rgba(255,255,255,0.04);
-    border: 1.5px solid rgba(255,255,255,0.12);
-    color: rgba(180,200,230,0.55);
-    padding: 9px 20px;
-    border-radius: 40px;
-    font-size: 0.78rem;
-    font-weight: 700;
-    letter-spacing: 1.2px;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
-  .mode-btn:hover {
-    border-color: rgba(0,200,255,0.4);
-    color: rgba(180,230,255,0.8);
-  }
-  .mode-btn.active {
-    background: linear-gradient(135deg, rgba(0,200,255,0.18), rgba(0,140,220,0.14));
-    border-color: rgba(0,200,255,0.55);
-    color: #7be8ff;
-    box-shadow: 0 0 12px rgba(0,180,255,0.15);
-  }
-
   @media (max-width: 700px) {
     .settings-layout { grid-template-columns: 1fr; }
     .settings-nav { position: static; flex-direction: row; flex-wrap: wrap; }
@@ -740,51 +707,6 @@
               <span id="currentLoginDisplay">—</span>
               <span class="field-current-badge">Логин</span>
             </div>
-          </div>
-
-          <div class="card-divider"></div>
-
-          <div class="field-group">
-            <div class="field-label">Отображаемое имя</div>
-            <input
-              type="text"
-              class="field-input"
-              id="displayNameInput"
-              placeholder="Введи имя..."
-              maxlength="25"
-              autocomplete="off"
-            >
-            <div class="field-hint">Будет отображаться в шапке вместо логина. Логин не меняется. До 25 символов.</div>
-            <div class="field-message" id="displayNameMsg"></div>
-          </div>
-
-          <div class="action-row">
-            <button class="btn-primary" id="saveDisplayNameBtn" onclick="saveDisplayName()">
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                <path d="M1 6l3.5 3.5L11 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-              Сохранить
-            </button>
-            <button class="btn-ghost" onclick="resetDisplayName()">Сбросить</button>
-          </div>
-        </div>
-
-        <div class="settings-card">
-          <div class="card-title">Что отображать на сайте</div>
-          <div class="field-group">
-            <div class="field-label">Отображаемое имя в шапке</div>
-            <div class="field-hint" style="margin-bottom:14px;">Выбери, что будет показываться в шапке сайта.</div>
-            <div class="display-mode-toggle" id="displayModeToggle">
-              <button class="mode-btn active" id="modeBtnLogin" onclick="setDisplayMode('login')">
-                <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="4" r="2.5" stroke="currentColor" stroke-width="1.3"/><path d="M1 12c0-2.485 2.462-4.5 5.5-4.5S12 9.515 12 12" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
-                Логин
-              </button>
-              <button class="mode-btn" id="modeBtnDisplay" onclick="setDisplayMode('display')">
-                <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M1.5 6.5s2-4 5-4 5 4 5 4-2 4-5 4-5-4-5-4Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><circle cx="6.5" cy="6.5" r="1.5" stroke="currentColor" stroke-width="1.3"/></svg>
-                Отображаемое имя
-              </button>
-            </div>
-            <div class="field-message" id="displayModeMsg"></div>
           </div>
         </div>
 
@@ -994,7 +916,7 @@
     verifyBeforeUpdateEmail, sendPasswordResetEmail,
     setPersistence, browserLocalPersistence
   } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-  import { getDatabase, ref, get, set as dbSet, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+  import { getDatabase, ref, get, set as dbSet } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyCMVd8slq6gc6lD1noTW0DDW8VkALJcZao",
@@ -1033,23 +955,11 @@
     } catch { return ''; }
   }
 
-  // ── Получить отображаемое имя из Firebase ──
-  async function loadDisplayName(uid) {
-    try {
-      const snap = await get(ref(db, 'users/' + uid + '/displayName'));
-      return snap.exists() ? snap.val() : null;
-    } catch { return null; }
-  }
-
   // ── Обновить имя в шапке ──
-  function updateHeaderName(login, displayName, mode) {
+  function updateHeaderName(login) {
     const el = document.getElementById('userNameDisplay');
     if (!el) return;
-    if (mode === 'display' && displayName) {
-      el.textContent = displayName.toUpperCase();
-    } else {
-      el.textContent = login;
-    }
+    el.textContent = login || '—';
   }
 
   // ── Применить данные залогиненного пользователя на странице ──
@@ -1062,104 +972,19 @@
     const emailEl = document.getElementById('currentEmailDisplay');
     if (emailEl) emailEl.value = user.email || '—';
 
-    const saved = await loadDisplayName(user.uid);
-    const input = document.getElementById('displayNameInput');
-    if (input) input.value = saved || '';
-
-    // Загружаем режим отображения
-    let mode = 'login';
-    try {
-      const modeSnap = await get(ref(db, 'users/' + user.uid + '/displayMode'));
-      if (modeSnap.exists()) mode = modeSnap.val();
-    } catch(e) {}
-    // Fallback: localStorage
-    if (mode === 'login') {
-      try {
-        const local = localStorage.getItem('displayMode_' + user.uid);
-        if (local === 'display') mode = 'display';
-      } catch(e) {}
-    }
-    applyDisplayModeUI(mode);
-    updateHeaderName(login, saved, mode);
+    updateHeaderName(login);
 
     // Резервируем логин в loginNames (ключи в индексах хранятся в верхнем регистре,
-    // как и при регистрации) + выгоняем того кто занял наш логин как кастомное имя
+    // как и при регистрации)
     if (login) {
       const loginKey = login.toUpperCase();
       try {
         await dbSet(ref(db, 'loginNames/' + loginKey), user.uid);
-
-        const takenSnap = await get(ref(db, 'displayNames/' + loginKey));
-        if (takenSnap.exists() && takenSnap.val() !== user.uid) {
-          const thiefUid = takenSnap.val();
-          await dbSet(ref(db, 'evictions/' + thiefUid), login);
-          await dbSet(ref(db, 'displayNames/' + loginKey), null);
-        }
       } catch(e) {}
     }
-    // Проверяем: не нужно ли сбросить наше собственное displayName (нас выгнали)?
-    try {
-      const evictSnap = await get(ref(db, 'evictions/' + user.uid));
-      if (evictSnap.exists()) {
-        await dbSet(ref(db, 'users/' + user.uid + '/displayName'), null);
-        await dbSet(ref(db, 'evictions/' + user.uid), null);
-        const input = document.getElementById('displayNameInput');
-        if (input) input.value = '';
-        updateHeaderName(login, null, mode);
-      }
-    } catch(e) {}
 
     hideOverlay();
   }
-
-  // ── Переключить режим отображения ──
-  function applyDisplayModeUI(mode) {
-    const btnLogin   = document.getElementById('modeBtnLogin');
-    const btnDisplay = document.getElementById('modeBtnDisplay');
-    if (!btnLogin || !btnDisplay) return;
-    if (mode === 'display') {
-      btnDisplay.classList.add('active');
-      btnLogin.classList.remove('active');
-    } else {
-      btnLogin.classList.add('active');
-      btnDisplay.classList.remove('active');
-    }
-  }
-
-  window.setDisplayMode = async function(mode) {
-    if (!currentUser) return;
-    const msg = document.getElementById('displayModeMsg');
-    msg.className = 'field-message';
-
-    const login = currentLogin;
-    const inputEl = document.getElementById('displayNameInput');
-    const currentDN = inputEl ? inputEl.value.trim() : '';
-
-    if (mode === 'display' && !currentDN) {
-      msg.textContent = '✕ Сначала сохрани отображаемое имя';
-      msg.className = 'field-message error';
-      return;
-    }
-
-    // Сразу обновляем UI — не ждём Firebase
-    applyDisplayModeUI(mode);
-    // Для шапки берём displayName из Firebase (актуальное сохранённое)
-    let dn = null;
-    try {
-      const snap = await get(ref(db, 'users/' + currentUser.uid + '/displayName'));
-      dn = snap.exists() ? snap.val() : null;
-    } catch(e) {}
-    updateHeaderName(login, dn, mode);
-
-    msg.textContent = mode === 'display' ? '✓ Показывается отображаемое имя' : '✓ Показывается логин';
-    msg.className = 'field-message success';
-
-    // Сохраняем в Firebase в фоне + localStorage как fallback
-    try {
-      await dbSet(ref(db, 'users/' + currentUser.uid + '/displayMode'), mode);
-    } catch(e) {}
-    try { localStorage.setItem('displayMode_' + currentUser.uid, mode); } catch(e) {}
-  };
 
   // ── Auth state ──
   // ВАЖНО: сразу после смены persistence Firebase может в первый раз
@@ -1197,117 +1022,6 @@
   });
 
   document.getElementById('logoutBtn').addEventListener('click', () => signOut(auth));
-
-  // ── Сохранить отображаемое имя ──
-  window.saveDisplayName = async function() {
-    if (!currentUser) return;
-    const input = document.getElementById('displayNameInput');
-    const msg   = document.getElementById('displayNameMsg');
-    const btn   = document.getElementById('saveDisplayNameBtn');
-    const val   = input.value.trim();
-
-    msg.className = 'field-message';
-
-    if (!val) {
-      msg.textContent = '✕ Введи имя';
-      msg.className = 'field-message error';
-      return;
-    }
-    if (val.length > 25) {
-      msg.textContent = '✕ Максимум 25 символов';
-      msg.className = 'field-message error';
-      return;
-    }
-    if (!/^[A-Za-z0-9_]+$/.test(val)) {
-      msg.textContent = '✕ Только латинские буквы, цифры и _';
-      msg.className = 'field-message error';
-      return;
-    }
-    if ((val.match(/[A-Za-z]/g) || []).length < 3) {
-      msg.textContent = '✕ Минимум 3 буквы в имени';
-      msg.className = 'field-message error';
-      return;
-    }
-
-    const nameKey = val.toUpperCase();
-
-    // Проверяем: имя зарезервировано за логином другого игрока?
-    // Логин из email (часть до @) тоже считается зарезервированным именем
-    // Проверяем индекс занятых имён
-    btn.disabled = true;
-    msg.textContent = '...';
-    msg.className = 'field-message';
-
-    try {
-      // 1. Проверка по индексу кастомных имён
-      const indexSnap = await get(ref(db, 'displayNames/' + nameKey));
-      if (indexSnap.exists() && indexSnap.val() !== currentUser.uid) {
-        msg.textContent = '✕ Это имя уже занято';
-        msg.className = 'field-message error';
-        btn.disabled = false;
-        return;
-      }
-      // 2. Проверка по индексу логинов — защищает имена тех кто ещё не заходил в настройки
-      const myLoginKey = currentLogin.toUpperCase();
-      if (nameKey !== myLoginKey) {
-        const loginSnap = await get(ref(db, 'loginNames/' + nameKey));
-        if (loginSnap.exists() && loginSnap.val() !== currentUser.uid) {
-          msg.textContent = '✕ Это имя уже занято';
-          msg.className = 'field-message error';
-          btn.disabled = false;
-          return;
-        }
-      }
-
-      // 2. Освобождаем старое имя из индекса (если было)
-      const oldSnap = await get(ref(db, 'users/' + currentUser.uid + '/displayName'));
-      if (oldSnap.exists() && oldSnap.val()) {
-        const oldKey = oldSnap.val().toUpperCase();
-        if (oldKey !== nameKey) {
-          await remove(ref(db, 'displayNames/' + oldKey));
-        }
-      }
-
-      // 3. Сохраняем новое имя и занимаем его в индексе
-      await dbSet(ref(db, 'users/' + currentUser.uid + '/displayName'), val);
-      await dbSet(ref(db, 'displayNames/' + nameKey), currentUser.uid);
-
-      // Автоматически переключаем режим на отображаемое имя
-      await dbSet(ref(db, 'users/' + currentUser.uid + '/displayMode'), 'display');
-      try { localStorage.setItem('displayMode_' + currentUser.uid, 'display'); } catch(e) {}
-      applyDisplayModeUI('display');
-      updateHeaderName(currentLogin, val, 'display');
-      msg.textContent = '✓ Сохранено';
-      msg.className = 'field-message success';
-    } catch {
-      msg.textContent = '✕ Ошибка сохранения';
-      msg.className = 'field-message error';
-    }
-    btn.disabled = false;
-  };
-
-  // ── Сбросить отображаемое имя ──
-  window.resetDisplayName = async function() {
-    if (!currentUser) return;
-    const input = document.getElementById('displayNameInput');
-    const msg   = document.getElementById('displayNameMsg');
-    msg.className = 'field-message';
-    try {
-      // Освобождаем имя из индекса
-      const oldSnap = await get(ref(db, 'users/' + currentUser.uid + '/displayName'));
-      if (oldSnap.exists() && oldSnap.val()) {
-        await remove(ref(db, 'displayNames/' + oldSnap.val().toUpperCase()));
-      }
-      await dbSet(ref(db, 'users/' + currentUser.uid + '/displayName'), null);
-      input.value = '';
-      updateHeaderName(currentLogin, null, 'login');
-      msg.textContent = '✓ Сброшено до логина';
-      msg.className = 'field-message success';
-    } catch {
-      msg.textContent = '✕ Ошибка';
-      msg.className = 'field-message error';
-    }
-  };
 
   // ── Сменить пароль ──
   window.changePassword = async function() {
