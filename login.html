@@ -19,19 +19,52 @@
   }
   * { cursor: default; box-sizing: border-box; }
   button, .auth-submit, .tab-btn, .forgot-link { cursor: pointer; }
+  button *, .auth-submit *, .tab-btn *, .forgot-link * { cursor: pointer; }
   input, textarea { cursor: text; }
 
   html, body {
     margin: 0;
     height: 100%;
-    background: #050d1a;
+    background: #040a14;
     font-family: system-ui, -apple-system, Roboto, Arial, sans-serif;
     color: #e5e7eb;
+    overflow: hidden;
+  }
+
+  /* ── Космос: звёзды, станция, корабли (чистый SVG/CSS, без картинок) ── */
+  .space-bg {
+    position: fixed; inset: 0; z-index: 0;
+    overflow: hidden;
+    background: #040a14;
+  }
+  .space-bg svg {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    display: block;
+  }
+  .nebula { animation: nebulaDrift 70s ease-in-out infinite alternate; }
+  @keyframes nebulaDrift {
+    0%   { transform: translateX(-2%) translateY(-1%); }
+    100% { transform: translateX(2%) translateY(1%); }
+  }
+  .star { animation: starTwinkle 4s ease-in-out infinite; }
+  .star.s2 { animation-duration: 5.6s; animation-delay: 1s; }
+  .star.s3 { animation-duration: 3.1s; animation-delay: 2s; }
+  .star.s4 { animation-duration: 6.4s; animation-delay: 0.6s; }
+  @keyframes starTwinkle {
+    0%, 100% { opacity: 0.25; }
+    50%      { opacity: 1; }
+  }
+  .space-vignette {
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse 90% 70% at 50% 42%, transparent 0%, rgba(2,1,8,0.6) 100%),
+      linear-gradient(180deg, rgba(2,1,8,0.2) 0%, rgba(2,1,8,0.1) 45%, rgba(2,1,8,0.55) 100%);
+    pointer-events: none;
   }
 
   #pinOverlay {
     position: fixed; inset: 0; z-index: 9999;
-    background: #050d1a;
     display: flex; align-items: center; justify-content: center;
     user-select: none;
     -webkit-user-select: none;
@@ -123,6 +156,7 @@
 
   /* Переключатель ВОЙТИ / РЕГИСТРАЦИЯ */
   .tab-switch {
+    position: relative;
     display: flex;
     width: 100%;
     background: rgba(0,20,45,0.6);
@@ -132,7 +166,22 @@
     gap: 4px;
     margin-bottom: 2px;
   }
+  .tab-indicator {
+    position: absolute;
+    top: 4px; bottom: 4px; left: 4px;
+    width: calc(50% - 6px);
+    border-radius: 8px;
+    background: linear-gradient(135deg, rgba(0,238,255,0.32), rgba(204,68,255,0.32));
+    box-shadow: 0 0 14px rgba(0,255,255,0.3), inset 0 1px 0 rgba(255,255,255,0.1);
+    transition: transform 0.35s cubic-bezier(.65,0,.35,1);
+    pointer-events: none;
+  }
+  .tab-switch[data-active="register"] .tab-indicator {
+    transform: translateX(calc(100% + 4px));
+  }
   .tab-btn {
+    position: relative;
+    z-index: 1;
     flex: 1;
     border: none;
     background: transparent;
@@ -144,12 +193,11 @@
     text-transform: uppercase;
     padding: 10px 6px;
     border-radius: 8px;
-    transition: all 0.15s ease;
+    transition: color 0.2s ease;
   }
   .tab-btn.active {
-    background: linear-gradient(135deg, rgba(0,238,255,0.18), rgba(204,68,255,0.18));
     color: #fff;
-    box-shadow: 0 0 10px rgba(0,255,255,0.15), inset 0 1px 0 rgba(255,255,255,0.06);
+    text-shadow: 0 0 10px rgba(0,220,255,0.5);
   }
 
   .auth-form {
@@ -189,32 +237,86 @@
     animation: shake 0.4s ease;
   }
   .auth-submit {
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
     width: 100%;
-    height: 54px;
+    height: 56px;
     border-radius: 14px;
     border: 1.5px solid rgba(0,255,255,0.3);
-    background: linear-gradient(135deg, rgba(0,238,255,0.18), rgba(204,68,255,0.18));
+    background: linear-gradient(135deg, rgba(0,20,45,0.92), rgba(20,8,38,0.92));
     color: #fff;
-    font-size: 0.95rem; font-weight: 900; font-family: monospace;
+    font-size: 0.92rem; font-weight: 900; font-family: monospace;
     letter-spacing: 3px;
     text-transform: uppercase;
     cursor: pointer;
-    transition: all 0.12s ease;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05);
+    transition: transform 0.18s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05);
   }
+  .auth-submit::before {
+    content: '';
+    position: absolute;
+    inset: -1.5px;
+    border-radius: 15px;
+    padding: 1.5px;
+    background: linear-gradient(115deg, #00eeff, #cc44ff, #ffdd00, #00eeff);
+    background-size: 300% 300%;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0.35;
+    animation: borderFlow 7s linear infinite;
+    transition: opacity 0.25s ease;
+    pointer-events: none;
+  }
+  @keyframes borderFlow {
+    to { background-position: 300% 0; }
+  }
+  .auth-submit::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(115deg, transparent 40%, rgba(255,255,255,0.28) 50%, transparent 60%);
+    transform: translateX(-130%);
+    transition: transform 0.6s ease;
+    pointer-events: none;
+  }
+  .auth-submit .btn-icon {
+    width: 16px; height: 16px; flex-shrink: 0;
+    transition: transform 0.25s ease;
+  }
+  .auth-submit .btn-label { position: relative; }
   .auth-submit:hover {
-    background: linear-gradient(135deg, rgba(0,238,255,0.3), rgba(204,68,255,0.3));
-    border-color: rgba(0,255,255,0.6);
-    box-shadow: 0 0 14px rgba(0,255,255,0.25), inset 0 1px 0 rgba(255,255,255,0.08);
     transform: translateY(-2px);
+    border-color: rgba(0,255,255,0.55);
+    box-shadow: 0 8px 22px rgba(0,0,0,0.45), 0 0 22px rgba(0,255,255,0.22), 0 0 34px rgba(204,68,255,0.14);
   }
+  .auth-submit:hover::before { opacity: 1; }
+  .auth-submit:hover::after { transform: translateX(130%); }
+  .auth-submit:hover .btn-icon { transform: translateX(3px); }
   .auth-submit:active {
-    transform: scale(0.97);
+    transform: translateY(0) scale(0.97);
   }
   .auth-submit:disabled {
     opacity: 0.5;
     cursor: default;
     transform: none;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05);
+  }
+  .auth-submit:disabled::before { opacity: 0.35; animation: none; }
+  .auth-submit .ripple {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.45);
+    transform: scale(0);
+    animation: rippleAnim 0.65s ease-out;
+    pointer-events: none;
+  }
+  @keyframes rippleAnim {
+    to { transform: scale(2.6); opacity: 0; }
   }
   .forgot-link {
     text-align: center;
@@ -270,6 +372,82 @@
 </head>
 <body>
 
+<div class="space-bg" aria-hidden="true">
+  <svg viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="spaceSky" cx="50%" cy="35%" r="75%">
+        <stop offset="0%"  stop-color="#152546"/>
+        <stop offset="45%" stop-color="#0b1729"/>
+        <stop offset="100%" stop-color="#04070f"/>
+      </radialGradient>
+      <radialGradient id="nebula1" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#2f5f99" stop-opacity="0.28"/>
+        <stop offset="100%" stop-color="#2f5f99" stop-opacity="0"/>
+      </radialGradient>
+      <radialGradient id="nebula2" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#1e3f6e" stop-opacity="0.26"/>
+        <stop offset="100%" stop-color="#1e3f6e" stop-opacity="0"/>
+      </radialGradient>
+      <filter id="glow" x="-150%" y="-150%" width="400%" height="400%">
+        <feGaussianBlur stdDeviation="1.4" result="b"/>
+        <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+
+    <rect x="0" y="0" width="1200" height="800" fill="url(#spaceSky)"/>
+
+    <!-- туманности -->
+    <g class="nebula">
+      <ellipse cx="260" cy="220" rx="360" ry="220" fill="url(#nebula1)"/>
+      <ellipse cx="920" cy="480" rx="380" ry="240" fill="url(#nebula2)"/>
+    </g>
+
+    <!-- звёзды -->
+    <g fill="#ffffff">
+      <circle class="star" cx="40" cy="60" r="1.4"/>
+      <circle class="star s2" cx="120" cy="140" r="1"/>
+      <circle class="star s3" cx="210" cy="40" r="1.6"/>
+      <circle class="star s4" cx="300" cy="180" r="1.1"/>
+      <circle class="star" cx="380" cy="90" r="1.3"/>
+      <circle class="star s2" cx="460" cy="30" r="1"/>
+      <circle class="star s3" cx="540" cy="160" r="1.5"/>
+      <circle class="star s4" cx="610" cy="70" r="1.2"/>
+      <circle class="star" cx="690" cy="200" r="1.4"/>
+      <circle class="star s2" cx="760" cy="50" r="1"/>
+      <circle class="star s3" cx="830" cy="130" r="1.6"/>
+      <circle class="star s4" cx="900" cy="20" r="1.1"/>
+      <circle class="star" cx="960" cy="170" r="1.3"/>
+      <circle class="star s2" cx="1030" cy="80" r="1"/>
+      <circle class="star s3" cx="1100" cy="40" r="1.5"/>
+      <circle class="star s4" cx="1160" cy="150" r="1.2"/>
+      <circle class="star" cx="60" cy="300" r="1.2"/>
+      <circle class="star s3" cx="180" cy="350" r="1"/>
+      <circle class="star s2" cx="260" cy="280" r="1.4"/>
+      <circle class="star s4" cx="420" cy="330" r="1"/>
+      <circle class="star" cx="520" cy="260" r="1.3"/>
+      <circle class="star s3" cx="620" cy="310" r="1.1"/>
+      <circle class="star s2" cx="740" cy="270" r="1.5"/>
+      <circle class="star s4" cx="850" cy="340" r="1"/>
+      <circle class="star" cx="980" cy="290" r="1.3"/>
+      <circle class="star s3" cx="1080" cy="250" r="1.1"/>
+      <circle class="star s2" cx="1170" cy="320" r="1.4"/>
+      <circle class="star s4" cx="30" cy="450" r="1"/>
+      <circle class="star" cx="330" cy="470" r="1.2"/>
+      <circle class="star s3" cx="580" cy="440" r="1.3"/>
+      <circle class="star s2" cx="820" cy="460" r="1.1"/>
+      <circle class="star s4" cx="1050" cy="430" r="1.4"/>
+      <circle class="star" cx="220" cy="540" r="1"/>
+      <circle class="star s3" cx="470" cy="560" r="1.3"/>
+      <circle class="star s2" cx="700" cy="530" r="1.1"/>
+      <circle class="star s4" cx="950" cy="570" r="1.2"/>
+      <circle class="star" cx="1140" cy="510" r="1"/>
+    </g>
+
+  </svg>
+  <div class="space-vignette"></div>
+</div>
+
+
 <div id="pinOverlay">
   <div class="pin-bg"></div>
 
@@ -283,7 +461,8 @@
     <div class="pin-sub" id="authSubLabel">ВХОД В СИСТЕМУ</div>
 
     <!-- Переключатель вкладок (только для входа/регистрации) -->
-    <div class="tab-switch" id="tabSwitch">
+    <div class="tab-switch" id="tabSwitch" data-active="login">
+      <div class="tab-indicator"></div>
       <button type="button" class="tab-btn active" id="tabBtnLogin" onclick="switchView('login')">Войти в аккаунт</button>
       <button type="button" class="tab-btn" id="tabBtnRegister" onclick="switchView('register')">Создать аккаунт</button>
     </div>
@@ -302,7 +481,12 @@
         </button>
       </div>
       <div class="pin-error" id="loginError"></div>
-      <button type="button" class="auth-submit" id="loginSubmit">ВОЙТИ</button>
+      <button type="button" class="auth-submit" id="loginSubmit">
+        <svg class="btn-icon" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M2.5 8h9M8 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="btn-label">ВОЙТИ</span>
+      </button>
       <div class="forgot-link" onclick="switchView('forgot')">Забыли пароль?</div>
     </div>
 
@@ -332,7 +516,14 @@
         </button>
       </div>
       <div class="pin-error" id="regError"></div>
-      <button type="button" class="auth-submit" id="regSubmit">СОЗДАТЬ АККАУНТ</button>
+      <button type="button" class="auth-submit" id="regSubmit">
+        <svg class="btn-icon" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="6.2" cy="5.5" r="2.6" stroke="currentColor" stroke-width="1.4"/>
+          <path d="M1.5 14.2c0-3 2.1-4.9 4.7-4.9s4.7 1.9 4.7 4.9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+          <path d="M12.6 4.2v4M10.6 6.2h4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+        </svg>
+        <span class="btn-label">СОЗДАТЬ АККАУНТ</span>
+      </button>
     </div>
 
     <!-- ЗАБЫЛИ ПАРОЛЬ -->
@@ -340,7 +531,13 @@
       <input type="text" id="forgotIdentInput" class="auth-input" placeholder="ЛОГИН ИЛИ ПОЧТА" autocomplete="username">
       <div class="pin-error" id="forgotError"></div>
       <div class="pin-success" id="forgotSuccess"></div>
-      <button type="button" class="auth-submit" id="forgotSubmit">ОТПРАВИТЬ ССЫЛКУ</button>
+      <button type="button" class="auth-submit" id="forgotSubmit">
+        <svg class="btn-icon" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M14.5 1.5 1.5 6.8l4.8 1.9 1.9 4.8L14.5 1.5Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+          <path d="M6.3 8.7 9.5 5.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+        </svg>
+        <span class="btn-label">ОТПРАВИТЬ ССЫЛКУ</span>
+      </button>
       <div class="forgot-link" onclick="switchView('login')">← Назад ко входу</div>
     </div>
 
@@ -368,7 +565,14 @@
       </div>
       <div class="pin-error" id="resetError"></div>
       <div class="pin-success" id="resetSuccess"></div>
-      <button type="button" class="auth-submit" id="resetSubmit">СОХРАНИТЬ ПАРОЛЬ</button>
+      <button type="button" class="auth-submit" id="resetSubmit">
+        <svg class="btn-icon" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="3" y="7.2" width="10" height="7" rx="1.6" stroke="currentColor" stroke-width="1.4"/>
+          <path d="M5 7.2V5a3 3 0 0 1 6 0v2.2" stroke="currentColor" stroke-width="1.4"/>
+          <circle cx="8" cy="10.6" r="1.1" fill="currentColor"/>
+        </svg>
+        <span class="btn-label">СОХРАНИТЬ ПАРОЛЬ</span>
+      </button>
     </div>
   </div>
 </div>
@@ -458,12 +662,36 @@
     }
   };
 
+  function setBtnLabel(btn, text) {
+    const label = btn.querySelector('.btn-label');
+    if (label) label.textContent = text; else btn.textContent = text;
+  }
+
+  // ── Ripple-эффект на кнопках отправки форм ──
+  document.querySelectorAll('.auth-submit').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+      if (btn.disabled) return;
+      const rect = btn.getBoundingClientRect();
+      const size = Math.max(rect.width, rect.height);
+      const ripple = document.createElement('span');
+      ripple.className = 'ripple';
+      ripple.style.width = ripple.style.height = size + 'px';
+      ripple.style.left = (e.clientX - rect.left - size / 2) + 'px';
+      ripple.style.top = (e.clientY - rect.top - size / 2) + 'px';
+      btn.appendChild(ripple);
+      setTimeout(() => ripple.remove(), 650);
+    });
+  });
+
   window.switchView = function(view) {
     Object.keys(views).forEach(k => views[k].style.display = (k === view ? 'flex' : 'none'));
     authSubLabel.textContent = subLabels[view];
     tabSwitch.style.display = (view === 'login' || view === 'register') ? 'flex' : 'none';
     tabBtnLogin.classList.toggle('active', view === 'login');
     tabBtnRegister.classList.toggle('active', view === 'register');
+    if (view === 'login' || view === 'register') {
+      tabSwitch.setAttribute('data-active', view);
+    }
     clearAllErrors();
   };
 
@@ -658,7 +886,7 @@
       const eKey = emailKey(email);
 
       regSubmit.disabled = true;
-      regSubmit.textContent = '...';
+      setBtnLabel(regSubmit, '...');
 
       try {
         const [loginSnap, dispSnap, emailSnap] = await Promise.all([
@@ -670,20 +898,20 @@
           regError.textContent = '✕ ЭТОТ ЛОГИН УЖЕ ЗАНЯТ';
           shakeInputs(['regLoginInput']);
           regSubmit.disabled = false;
-          regSubmit.textContent = 'СОЗДАТЬ АККАУНТ';
+          setBtnLabel(regSubmit, 'СОЗДАТЬ АККАУНТ');
           return;
         }
         if (emailSnap.exists()) {
           regError.textContent = '✕ ЭТА ПОЧТА УЖЕ ИСПОЛЬЗУЕТСЯ';
           shakeInputs(['regEmailInput']);
           regSubmit.disabled = false;
-          regSubmit.textContent = 'СОЗДАТЬ АККАУНТ';
+          setBtnLabel(regSubmit, 'СОЗДАТЬ АККАУНТ');
           return;
         }
       } catch (e) {
         regError.textContent = '✕ ОШИБКА ПРОВЕРКИ, ПОПРОБУЙ ЕЩЁ РАЗ';
         regSubmit.disabled = false;
-        regSubmit.textContent = 'СОЗДАТЬ АККАУНТ';
+        setBtnLabel(regSubmit, 'СОЗДАТЬ АККАУНТ');
         return;
       }
 
@@ -751,7 +979,7 @@
           regError.textContent = '✕ ЛОГИН ТОЛЬКО ЧТО ЗАНЯЛИ, ВЫБЕРИ ДРУГОЙ';
           shakeInputs(['regLoginInput']);
           regSubmit.disabled = false;
-          regSubmit.textContent = 'СОЗДАТЬ АККАУНТ';
+          setBtnLabel(regSubmit, 'СОЗДАТЬ АККАУНТ');
           return;
         }
         // Запись логина в базу подтверждена — теперь можно безопасно
@@ -770,7 +998,7 @@
           regError.textContent = '✕ ОШИБКА: ' + err.code;
         }
         regSubmit.disabled = false;
-        regSubmit.textContent = 'СОЗДАТЬ АККАУНТ';
+        setBtnLabel(regSubmit, 'СОЗДАТЬ АККАУНТ');
       }
     }
     regSubmit.addEventListener('click', tryRegister);
