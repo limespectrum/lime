@@ -609,35 +609,46 @@
         const cred = await createUserWithEmailAndPassword(auth, email, pass);
         const uid = cred.user.uid;
         try {
-          // ВАЖНО: правило записи в loginEmails/{login} требует, чтобы
-          // root.child('loginNames/' + login) УЖЕ равнялся auth.uid НА МОМЕНТ
-          // проверки правила. Если писать loginNames и loginEmails одним общим
-          // multi-path update(), для совершенно нового логина loginNames в эту
-          // секунду ещё не существует в БД — правило не проходит гарантированно,
-          // не только в случае гонки. Поэтому делаем два ПОСЛЕДОВАТЕЛЬНЫХ шага:
-          // сначала фиксируем loginNames (+ остальное), и только когда сервер
-          // подтвердил эту запись, пишем loginEmails вторым запросом — тогда
-          // root уже точно видит его.
-          const step1 = {};
-          step1['users/' + uid + '/login'] = login;
-          step1['users/' + uid + '/email'] = email;
-          step1['loginNames/' + loginKey] = uid;
-          step1['emails/' + eKey] = uid;
-          await dbUpdate(ref(db), step1);
+          // ВАЖНО: правило записи в users/{uid}/login (при создании) и в
+          // loginEmails/{login} обе требуют, чтобы root.child('loginNames/'+login)
+          // УЖЕ равнялся auth.uid НА МОМЕНТ проверки правила. Если писать
+          // loginNames одним multi-path update() вместе с путём, который на
+          // неё ссылается через root.child(...), для совершенно нового логина
+          // loginNames в эту секунду ещё не существует в БД с точки зрения
+          // правила — оно не проходит гарантированно, не только в случае гонки.
+          // Поэтому пишем строго ТРЕМЯ последовательными шагами:
+          //   1) loginNames — отдельно, первым, ждём подтверждения сервера;
+          //   2) users/login + users/email + emails — вторым update(),
+          //      когда root уже точно видит loginNames;
+          //   3) loginEmails — третьим, по той же причине.
+          await dbSet(ref(db, 'loginNames/' + loginKey), uid);
 
           try {
-            await dbSet(ref(db, 'loginEmails/' + loginKey), email);
-          } catch (step2Err) {
-            // Первый шаг прошёл, а второй — нет. Откатываем то, что успели
-            // записать на первом шаге, чтобы не оставить "половинчатую" запись.
+            const step2 = {};
+            step2['users/' + uid + '/login'] = login;
+            step2['users/' + uid + '/email'] = email;
+            step2['emails/' + eKey] = uid;
+            await dbUpdate(ref(db), step2);
+
             try {
-              const rollback = {};
-              rollback['users/' + uid] = null;
-              rollback['loginNames/' + loginKey] = null;
-              rollback['emails/' + eKey] = null;
-              await dbUpdate(ref(db), rollback);
+              await dbSet(ref(db, 'loginEmails/' + loginKey), email);
+            } catch (step3Err) {
+              try {
+                const rollback = {};
+                rollback['users/' + uid] = null;
+                rollback['loginNames/' + loginKey] = null;
+                rollback['emails/' + eKey] = null;
+                await dbUpdate(ref(db), rollback);
+              } catch (rbErr) {
+                console.error('Не удалось откатить частичную запись после сбоя шага 3:', rbErr);
+              }
+              throw step3Err;
+            }
+          } catch (step2Err) {
+            try {
+              await dbSet(ref(db, 'loginNames/' + loginKey), null);
             } catch (rbErr) {
-              console.error('Не удалось откатить частичную запись после сбоя шага 2:', rbErr);
+              console.error('Не удалось откатить loginNames после сбоя шага 2:', rbErr);
             }
             throw step2Err;
           }
