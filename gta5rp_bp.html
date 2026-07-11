@@ -2495,12 +2495,10 @@ body.char2-active .filter-btn.active[data-col="col-fraction"]:hover {
 }
 </style>
 
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-  import { getDatabase, ref, get, set as dbSet, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-
-  const firebaseConfig = {
+<script>
+  // Единый конфиг Firebase — используется во всех script type="module" ниже,
+  // чтобы не дублировать apiKey/projectId и т.д. в нескольких местах файла.
+  window.__FIREBASE_CONFIG__ = {
     apiKey: "AIzaSyCMVd8slq6gc6lD1noTW0DDW8VkALJcZao",
     authDomain: "bonuspoint-lime.firebaseapp.com",
     databaseURL: "https://bonuspoint-lime-default-rtdb.europe-west1.firebasedatabase.app",
@@ -2509,6 +2507,14 @@ body.char2-active .filter-btn.active[data-col="col-fraction"]:hover {
     messagingSenderId: "647315774952",
     appId: "1:647315774952:web:b8269372e8abf5d97f185d"
   };
+</script>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getDatabase, ref, get, set as dbSet, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+  const firebaseConfig = window.__FIREBASE_CONFIG__;
 
   const authApp = initializeApp(firebaseConfig, "authApp");
   const auth = getAuth(authApp);
@@ -4737,15 +4743,7 @@ body.char2-active .oum-footer-hint {
   // Переиспользуем уже инициализированное приложение authApp
   let app;
   try { app = getApp("authApp"); } catch(e) {
-    app = initializeApp({
-      apiKey: "AIzaSyCMVd8slq6gc6lD1noTW0DDW8VkALJcZao",
-      authDomain: "bonuspoint-lime.firebaseapp.com",
-      databaseURL: "https://bonuspoint-lime-default-rtdb.europe-west1.firebasedatabase.app",
-      projectId: "bonuspoint-lime",
-      storageBucket: "bonuspoint-lime.firebasestorage.app",
-      messagingSenderId: "647315774952",
-      appId: "1:647315774952:web:b8269372e8abf5d97f185d"
-    }, "authApp");
+    app = initializeApp(window.__FIREBASE_CONFIG__, "authApp");
   }
 
   const db = getDatabase(app);
