@@ -835,6 +835,44 @@
           </div>
         </div>
 
+        <div class="settings-card" style="border-color: rgba(255,70,70,0.35);">
+          <div class="card-title" style="color:#ff6b6b;">Удаление аккаунта</div>
+          <div class="field-hint" style="margin-top:-4px; margin-bottom:10px;">
+            Действие необратимо: будут удалены логин, почта, все данные аккаунта и вход по паролю.
+            Восстановить их будет невозможно.
+          </div>
+
+          <div class="field-group">
+            <div class="field-label">Текущий пароль</div>
+            <div class="pass-wrapper">
+              <input
+                type="password"
+                class="field-input"
+                id="deleteAccPassInput"
+                placeholder="••••••••"
+                autocomplete="current-password"
+              >
+              <button type="button" class="pass-toggle" onclick="togglePass('deleteAccPassInput', this)" tabindex="-1">
+                <svg class="eye-icon" width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M1 9C1 9 3.5 3.5 9 3.5S17 9 17 9s-2.5 5.5-8 5.5S1 9 1 9Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+                  <circle cx="9" cy="9" r="2.2" stroke="currentColor" stroke-width="1.4"/>
+                  <line class="eye-slash" x1="2" y1="2" x2="16" y2="16" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" style="display:none"/>
+                </svg>
+              </button>
+            </div>
+            <div class="field-message" id="deleteAccMsg"></div>
+          </div>
+
+          <div class="action-row">
+            <button class="btn-primary" id="deleteAccBtn" onclick="deleteAccount()" style="background:#7a1f1f; border-color:#ff6b6b;">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                <path d="M2 3h8M4.5 3V2a1 1 0 011-1h1a1 1 0 011 1v1M4 3v7a1 1 0 001 1h2a1 1 0 001-1V3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              Удалить аккаунт
+            </button>
+          </div>
+        </div>
+
       </div>
 
     </div>
@@ -913,7 +951,7 @@
   import {
     getAuth, onAuthStateChanged, signOut,
     EmailAuthProvider, reauthenticateWithCredential, updatePassword,
-    verifyBeforeUpdateEmail, sendPasswordResetEmail,
+    verifyBeforeUpdateEmail, sendPasswordResetEmail, deleteUser,
     setPersistence, browserLocalPersistence
   } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
   import { getDatabase, ref, get, set as dbSet } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
@@ -936,6 +974,15 @@
 
   let currentUser = null;
   let currentLogin = ''; // реальный логин из users/{uid}/login, кэшируется в applyUser()
+
+  // ── Ключ для email-индекса (RTDB не разрешает точки в ключах) ──
+  // Та же функция, что и на странице входа/регистрации — важно,
+  // чтобы ключи совпадали при удалении записи из emails/.
+  function emailKey(email) {
+    return email.trim().toLowerCase().replace(/[.#$\[\]]/g, (c) => (
+      { '.': '_D_', '#': '_H_', '$': '_S_', '[': '_LB_', ']': '_RB_' }[c]
+    ));
+  }
 
   // ── Прячем оверлей ──
   function hideOverlay() {
@@ -1139,6 +1186,106 @@
       msg.className = 'field-message error';
     }
     btn.disabled = false;
+  };
+
+  // ── Удалить аккаунт ──
+  // Порядок важен: правила БД дают удалить loginEmails/emails/loginNames
+  // только пока связанные записи ещё не тронуты (см. database-rules-updated.json).
+  // Поэтому удаляем в такой последовательности:
+  //   1) online/{uid}      — сессии пользователя
+  //   2) loginEmails/{key}  — пока loginNames ещё существует (правило это требует)
+  //   3) emails/{key}       — своя запись по email
+  //   4) loginNames/{key}   — освобождаем логин последним
+  //   5) users/{uid}        — вся ветка профиля
+  //   6) удаляем сам Auth-аккаунт (реквайрит "недавний" вход — поэтому сначала реаутентификация)
+  window.deleteAccount = async function() {
+    if (!currentUser) return;
+    const pass = document.getElementById('deleteAccPassInput').value;
+    const msg  = document.getElementById('deleteAccMsg');
+    const btn  = document.getElementById('deleteAccBtn');
+
+    msg.className = 'field-message';
+
+    if (!pass) {
+      msg.textContent = '✕ Введи текущий пароль';
+      msg.className = 'field-message error';
+      return;
+    }
+
+    const sure = window.confirm(
+      'Аккаунт «' + (currentLogin || currentUser.email) + '» будет удалён безвозвратно. Продолжить?'
+    );
+    if (!sure) return;
+
+    btn.disabled = true;
+    msg.textContent = 'Удаление...';
+
+    const uid = currentUser.uid;
+    const email = currentUser.email || '';
+    const login = currentLogin || '';
+    const loginKey = login ? login.toUpperCase() : '';
+    const eKey = email ? emailKey(email) : '';
+
+    try {
+      // Реаутентификация паролем — обязательна и для Firebase Auth
+      // (deleteUser требует "недавний" вход), и как проверка, что
+      // именно владелец аккаунта запрашивает удаление.
+      const cred = EmailAuthProvider.credential(email, pass);
+      await reauthenticateWithCredential(currentUser, cred);
+    } catch (err) {
+      if (err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
+        msg.textContent = '✕ Неверный текущий пароль';
+      } else {
+        msg.textContent = '✕ Ошибка: ' + err.code;
+      }
+      msg.className = 'field-message error';
+      btn.disabled = false;
+      return;
+    }
+
+    try {
+      // 1) сессии
+      await dbSet(ref(db, 'online/' + uid), null);
+
+      // 2) loginEmails — пока loginNames ещё указывает на нас
+      if (loginKey) {
+        await dbSet(ref(db, 'loginEmails/' + loginKey), null);
+      }
+
+      // 3) emails
+      if (eKey) {
+        await dbSet(ref(db, 'emails/' + eKey), null);
+      }
+
+      // 4) loginNames — освобождаем логин
+      if (loginKey) {
+        await dbSet(ref(db, 'loginNames/' + loginKey), null);
+      }
+
+      // 5) сам профиль
+      await dbSet(ref(db, 'users/' + uid), null);
+    } catch (err) {
+      msg.textContent = '✕ Не удалось удалить данные аккаунта: ' + err.code + '. Аккаунт НЕ удалён, попробуй ещё раз.';
+      msg.className = 'field-message error';
+      btn.disabled = false;
+      return;
+    }
+
+    try {
+      // 6) сам аккаунт входа
+      await deleteUser(currentUser);
+    } catch (err) {
+      // Данные в БД уже удалены, но вход (Firebase Auth) удалить не
+      // получилось — просим перезайти и повторить последний шаг.
+      msg.textContent = '✕ Данные удалены, но не удалось удалить вход: ' + err.code + '. Перезайди и повтори.';
+      msg.className = 'field-message error';
+      btn.disabled = false;
+      return;
+    }
+
+    msg.textContent = '✓ Аккаунт удалён';
+    msg.className = 'field-message success';
+    setTimeout(() => { window.location.href = './'; }, 1200);
   };
 </script>
 
