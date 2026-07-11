@@ -1074,6 +1074,10 @@
             step2['loginEmails/' + loginKey] = email;
             await dbUpdate(ref(db), step2);
           } catch (step2Err) {
+            // ВАЖНО ДЛЯ ДИАГНОСТИКИ: печатаем настоящую ошибку в консоль —
+            // сообщение пользователю ниже одинаковое для любой причины сбоя,
+            // а тут виден точный код/текст от Firebase (permission_denied и т.д.)
+            console.error('Регистрация: сбой шага 2 (users/emails/loginEmails):', step2Err.code, step2Err.message, step2Err);
             // update() атомарен — если он упал, НИ ОДИН из пяти путей
             // внутри него не записался (users, emails, loginEmails остались
             // чистыми). Откатывать нужно только шаг 1 — loginNames.
@@ -1085,6 +1089,7 @@
             throw step2Err;
           }
         } catch (writeErr) {
+          console.error('Регистрация: сбой записи в БД после создания Auth-аккаунта:', writeErr.code, writeErr.message, writeErr);
           // Логин заняли за долю секунды раньше нас — аккаунт уже создан на новой почте,
           // но индекс логина занять не удалось.
           // ВАЖНО: обязательно откатываем созданный Auth-аккаунт, иначе он "осиротеет" —
