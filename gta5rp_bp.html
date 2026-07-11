@@ -2765,10 +2765,26 @@ body.char2-active .filter-btn.active[data-col="col-fraction"]:hover {
 
   document.body.style.overflow = 'hidden';
 
-  function getDisplayName(email) {
-    if (!email) return '';
-    const local = email.split('@')[0].toUpperCase();
-    return local;
+  // ВАЖНО: раньше здесь "логином" считалась часть email до "@" — это было
+  // некорректно (email не имеет отношения к логину, который человек ввёл
+  // при регистрации) и небезопасно (см. ниже). Теперь настоящий логин
+  // читается из users/{uid}/login — там же, куда его пишет login.html
+  // при регистрации.
+  async function getRealLogin(uid) {
+    try {
+      const snap = await get(ref(db, 'users/' + uid + '/login'));
+      return snap.exists() && snap.val() ? snap.val() : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // Пока настоящий логин ещё не подгружен (или для очень старых аккаунтов,
+  // у которых почему-то не записан users/{uid}/login) — нейтральная заглушка.
+  // Часть email до "@" сюда специально НЕ подставляется: это чужие данные
+  // (адрес почты), которые не должны публично показываться как "логин".
+  function fallbackName() {
+    return 'ИГРОК';
   }
 
   // Фоллбек: если Firebase не ответил за 5 секунд — уходим на страницу входа
@@ -2792,8 +2808,13 @@ body.char2-active .filter-btn.active[data-col="col-fraction"]:hover {
     clearTimeout(authFallbackTimer);
     if (user) {
       const nameEl = document.getElementById('userNameDisplay');
-      if (nameEl) nameEl.textContent = getDisplayName(user.email);
       currentUid = user.uid;
+
+      // Настоящий логин — из users/{uid}/login (тот, что человек выбрал при
+      // регистрации в login.html), а не производная от email.
+      const realLogin = await getRealLogin(user.uid);
+      if (nameEl) nameEl.textContent = realLogin || fallbackName();
+
       try {
         const hadCloud = await pullStateFromCloud(user.uid);
         if (hadCloud) {
@@ -2815,7 +2836,7 @@ body.char2-active .filter-btn.active[data-col="col-fraction"]:hover {
 
       function _refreshHeaderName() {
         if (nameEl) {
-          nameEl.textContent = (_hdrMode === 'display' && _hdrDn) ? _hdrDn.toUpperCase() : getDisplayName(user.email);
+          nameEl.textContent = (_hdrMode === 'display' && _hdrDn) ? _hdrDn.toUpperCase() : (realLogin || fallbackName());
         }
       }
 
@@ -2836,30 +2857,20 @@ body.char2-active .filter-btn.active[data-col="col-fraction"]:hover {
           _refreshHeaderName();
         });
       } catch(e) {}
-      // Резервируем логин в loginNames + выгоняем того кто занял наш логин как кастомное имя
-      try {
-        const loginKey = getDisplayName(user.email);
-        await dbSet(ref(db, 'loginNames/' + loginKey), user.uid);
-
-        // Проверяем: не занял ли кто-то наш логин как displayName?
-        const takenSnap = await get(ref(db, 'displayNames/' + loginKey));
-        if (takenSnap.exists() && takenSnap.val() !== user.uid) {
-          const thiefUid = takenSnap.val();
-          await dbSet(ref(db, 'evictions/' + thiefUid), loginKey);
-          await dbSet(ref(db, 'displayNames/' + loginKey), null);
-        }
-      } catch(e) {}
-      // Проверяем: не нужно ли сбросить наше собственное displayName (нас выгнали)?
-      try {
-        const evictSnap = await get(ref(db, 'evictions/' + user.uid));
-        if (evictSnap.exists()) {
-          // Сбрасываем своё displayName
-          await dbSet(ref(db, 'users/' + user.uid + '/displayName'), null);
-          await dbSet(ref(db, 'evictions/' + user.uid), null);
-          // Обновляем отображение
-          if (nameEl) nameEl.textContent = getDisplayName(user.email);
-        }
-      } catch(e) {}
+      // Резервируем логин в loginNames (на случай очень старых аккаунтов,
+      // у которых этой записи почему-то ещё нет) — используя НАСТОЯЩИЙ логин.
+      // ВАЖНО: раньше здесь дополнительно был механизм "выселения" — если
+      // часть чужого email до "@" совпадала с чьим-то кастомным именем,
+      // у того человека принудительно сбрасывался displayName. Это было
+      // некорректно и небезопасно: совпадение локальной части email с чужим
+      // именем ничего не говорит о том, кто на самом деле имеет право на
+      // это имя, и позволяло постороннему человеку "выселить" чужой ник,
+      // просто зарегистрировав подходящий email. Эта логика удалена целиком.
+      if (realLogin) {
+        try {
+          await dbSet(ref(db, 'loginNames/' + realLogin.toUpperCase()), user.uid);
+        } catch(e) {}
+      }
       // Скрываем оверлей — всегда, даже если что-то пошло не так
       hideOverlay();
     } else {
@@ -4875,9 +4886,18 @@ body.char2-active .oum-footer-hint {
   const auth = getAuth(app);
   const onlineRef = ref(db, 'online');
 
-  function getNick(email) {
-    if (!email) return '???';
-    return email.split('@')[0].toUpperCase();
+  // ВАЖНО: раньше "ник" в публичном списке онлайна брался из части email
+  // до "@". Узел 'online' читается публично (.read: true), так что это
+  // фактически показывало всем посетителям сайта кусок чужого email —
+  // утечка приватных данных. Теперь ник берётся из users/{uid}/login
+  // (настоящий логин, который человек сам выбрал и который и так публичен).
+  async function getRealLoginPublic(uid) {
+    try {
+      const snap = await get(ref(db, 'users/' + uid + '/login'));
+      return snap.exists() && snap.val() ? snap.val() : null;
+    } catch (e) {
+      return null;
+    }
   }
 
   function updateTooltip(snapshot) {
@@ -4942,6 +4962,7 @@ body.char2-active .oum-footer-hint {
   let _onlineDn = null;
   let _onlineMode = 'login';
   let _onlineUserRef = null;
+  let _onlineRealLogin = null;
 
   function _localMode(uid) {
     try {
@@ -4951,13 +4972,13 @@ body.char2-active .oum-footer-hint {
 
   async function _refreshOnlineNick(user) {
     if (!_onlineUserRef) return;
-    const nick = (_onlineMode === 'display' && _onlineDn) ? _onlineDn : getNick(user.email);
+    const nick = (_onlineMode === 'display' && _onlineDn) ? _onlineDn : (_onlineRealLogin || 'ИГРОК');
     try {
       await set(_onlineUserRef, { nick, uid: user.uid, t: serverTimestamp() });
     } catch(e) {}
   }
 
-  onAuthStateChanged(auth, (user) => {
+  onAuthStateChanged(auth, async (user) => {
     if (!user) return;
     const uid = user.uid;
     _onlineUid = uid;
@@ -4966,6 +4987,7 @@ body.char2-active .oum-footer-hint {
 
     // Базовое значение, на случай если данных в Firebase ещё нет
     _onlineMode = _localMode(uid) || 'login';
+    _onlineRealLogin = await getRealLoginPublic(uid);
 
     // Флаги: ждём оба значения перед первой записью ника, чтобы не было гонки
     let _dnLoaded = false;
