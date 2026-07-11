@@ -1256,6 +1256,72 @@
     text-shadow: 0 0 6px rgba(255,210,0,0.8), 0 0 14px rgba(255,80,160,0.35);
   }
 
+  /* ── Счётчик "часы в онлайне" (замена галки для многоразового задания) ── */
+  .online-counter {
+    display: inline-flex;
+    align-items: stretch;
+    height: 28px;
+    border-radius: 8px;
+    border: 1.5px solid rgba(255,255,255,0.45);
+    background: linear-gradient(135deg, rgba(255,255,255,0.10), rgba(255,255,255,0.03));
+    overflow: hidden;
+    box-shadow: inset 0 0 8px rgba(255,255,255,0.08);
+    transition: all 0.25s ease;
+  }
+  .online-counter .oc-btn {
+    width: 26px;
+    flex: 0 0 26px;
+    line-height: 1;
+    border: none;
+    background: transparent;
+    color: #f2f2f2;
+    font-size: 15px;
+    font-weight: 800;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.15s ease;
+    padding: 0;
+  }
+  .online-counter .oc-minus { border-right: 1.5px solid rgba(255,255,255,0.30); }
+  .online-counter .oc-plus { border-left: 1.5px solid rgba(255,255,255,0.30); }
+  .online-counter .oc-btn:hover:not(:disabled) {
+    background: rgba(255,255,255,0.22);
+    color: #fff;
+  }
+  .online-counter .oc-btn:active:not(:disabled) { background: rgba(255,255,255,0.35); }
+  .online-counter .oc-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+  .online-counter .oc-circle {
+    flex: 1 1 auto;
+    min-width: 42px;
+    height: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    font-weight: 800;
+    color: #ffffff;
+    text-shadow: 0 0 6px rgba(255,255,255,0.6);
+    transition: color 0.25s ease;
+  }
+  .online-counter .oc-value { font-size: 0.92rem; line-height: 1; }
+  .online-counter .oc-unit { font-size: 0.68rem; opacity: 0.85; line-height: 1; }
+  tr.counter-row.done .online-counter {
+    border-color: #d4a017;
+    background: linear-gradient(135deg, rgba(255,200,30,0.18), rgba(200,120,0,0.10));
+    box-shadow: 0 0 10px rgba(255,180,0,0.25), inset 0 0 8px rgba(255,215,0,0.08);
+  }
+  tr.counter-row.done .online-counter .oc-minus { border-right-color: rgba(255,200,30,0.35); }
+  tr.counter-row.done .online-counter .oc-plus { border-left-color: rgba(255,200,30,0.35); }
+  tr.counter-row.done .online-counter .oc-circle {
+    color: #ffe566;
+  }
+
   @media (max-width:1600px){ .grid{ grid-template-columns: repeat(min(var(--visible-cols, 5), 3), 1fr); } }
   @media (max-width:1100px){ .grid{ grid-template-columns: repeat(min(var(--visible-cols, 5), 2), 1fr); } }
   @media (max-width:700px){ body{ padding:14px; } .grid{ grid-template-columns: 1fr; } .controls{ flex-direction:column; align-items:stretch; } .center-actions{ flex-wrap:wrap; justify-content:center; } .legend{ grid-template-columns: 1fr; } .legend-filters, .legend-settings{ grid-column: 1; justify-self: center; justify-content: center; } }
@@ -2686,17 +2752,10 @@ body.char2-active .filter-btn.active[data-col="col-fraction"]:hover {
 
   document.body.style.overflow = 'hidden';
 
-  // ── Реальный логин, сохранённый при регистрации (users/{uid}/login) ──
-  // Раньше логин в шапке вычислялся из email (часть до "@"), но при переходе
-  // на новую систему авторизации email может отсутствовать/не совпадать
-  // с логином, поэтому читаем логин напрямую из базы. Фоллбек на старую
-  // email-схему оставлен только на случай, если запись login ещё не создана.
-  async function loadLogin(uid, email) {
-    try {
-      const snap = await get(ref(db, 'users/' + uid + '/login'));
-      if (snap.exists() && snap.val()) return snap.val();
-    } catch(e) {}
-    return email ? email.split('@')[0].toUpperCase() : '';
+  function getDisplayName(email) {
+    if (!email) return '';
+    const local = email.split('@')[0].toUpperCase();
+    return local;
   }
 
   // Фоллбек: если Firebase не ответил за 5 секунд — уходим на страницу входа
@@ -2720,8 +2779,7 @@ body.char2-active .filter-btn.active[data-col="col-fraction"]:hover {
     clearTimeout(authFallbackTimer);
     if (user) {
       const nameEl = document.getElementById('userNameDisplay');
-      const login = await loadLogin(user.uid, user.email);
-      if (nameEl) nameEl.textContent = login || '—';
+      if (nameEl) nameEl.textContent = getDisplayName(user.email);
       currentUid = user.uid;
       try {
         const hadCloud = await pullStateFromCloud(user.uid);
@@ -2731,10 +2789,62 @@ body.char2-active .filter-btn.active[data-col="col-fraction"]:hover {
           pushStateToCloud();
         }
       } catch(e) {}
-      // Резервируем логин в loginNames (индекс хранится в верхнем регистре)
+      // Подгружаем кастомное имя персонажа из базы (если задано в настройках)
+      // и учитываем выбранный режим отображения (логин / отображаемое имя).
+      // Подписка в реальном времени — шапка обновится сразу, даже если режим
+      // меняется в другой вкладке (например, на странице настроек аккаунта).
+      let _hdrDn = null;
+      let _hdrMode = 'login';
       try {
-        if (login) {
-          await dbSet(ref(db, 'loginNames/' + login.toUpperCase()), user.uid);
+        const local = localStorage.getItem('displayMode_' + user.uid);
+        if (local === 'display') _hdrMode = 'display';
+      } catch(e) {}
+
+      function _refreshHeaderName() {
+        if (nameEl) {
+          nameEl.textContent = (_hdrMode === 'display' && _hdrDn) ? _hdrDn.toUpperCase() : getDisplayName(user.email);
+        }
+      }
+
+      try {
+        onValue(ref(db, 'users/' + user.uid + '/displayName'), (snap) => {
+          _hdrDn = snap.exists() ? snap.val() : null;
+          _refreshHeaderName();
+        });
+        onValue(ref(db, 'users/' + user.uid + '/displayMode'), (snap) => {
+          if (snap.exists()) {
+            _hdrMode = snap.val();
+          } else {
+            try {
+              const local = localStorage.getItem('displayMode_' + user.uid);
+              _hdrMode = (local === 'display') ? 'display' : 'login';
+            } catch(e) { _hdrMode = 'login'; }
+          }
+          _refreshHeaderName();
+        });
+      } catch(e) {}
+      // Резервируем логин в loginNames + выгоняем того кто занял наш логин как кастомное имя
+      try {
+        const loginKey = getDisplayName(user.email);
+        await dbSet(ref(db, 'loginNames/' + loginKey), user.uid);
+
+        // Проверяем: не занял ли кто-то наш логин как displayName?
+        const takenSnap = await get(ref(db, 'displayNames/' + loginKey));
+        if (takenSnap.exists() && takenSnap.val() !== user.uid) {
+          const thiefUid = takenSnap.val();
+          await dbSet(ref(db, 'evictions/' + thiefUid), loginKey);
+          await dbSet(ref(db, 'displayNames/' + loginKey), null);
+        }
+      } catch(e) {}
+      // Проверяем: не нужно ли сбросить наше собственное displayName (нас выгнали)?
+      try {
+        const evictSnap = await get(ref(db, 'evictions/' + user.uid));
+        if (evictSnap.exists()) {
+          // Сбрасываем своё displayName
+          await dbSet(ref(db, 'users/' + user.uid + '/displayName'), null);
+          await dbSet(ref(db, 'evictions/' + user.uid), null);
+          // Обновляем отображение
+          if (nameEl) nameEl.textContent = getDisplayName(user.email);
         }
       } catch(e) {}
       // Скрываем оверлей — всегда, даже если что-то пошло не так
@@ -3394,7 +3504,7 @@ body.char2-active .filter-btn.active[data-col="col-fraction"]:hover {
     </div>
     <h2 class="col-title" data-default="Средние" ><span class="col-color-dot" data-col-id="col-medium"></span><span class="col-title-text">Средние</span></h2>
     <table class="tasks-column"><tbody>
-      <tr><td>3 часа в онлайне</td><td><input id="cb43" type="checkbox"></td><td class="reward" data-with="4" data-without="2">8 BP</td></tr>
+      <tr class="counter-row" data-counter-max="8" data-counter-step="3"><td>3 часа в онлайне</td><td><input id="cb43" type="checkbox" style="display:none"><div class="online-counter" data-target="cb43"><button type="button" class="oc-btn oc-minus" aria-label="Убавить 3 часа">−</button><div class="oc-circle"><span class="oc-value">0</span><span class="oc-unit">ч</span></div><button type="button" class="oc-btn oc-plus" aria-label="Добавить 3 часа">+</button></div></td><td class="reward" data-with="4" data-without="2">8 BP</td></tr>
       <tr><td>25 действий на стройке</td><td><input id="cb17" type="checkbox"></td><td class="reward" data-with="4" data-without="2">8 BP</td></tr>
       <tr><td>25 действий в порту</td><td><input id="cb18" type="checkbox"></td><td class="reward" data-with="4" data-without="2">8 BP</td></tr>
       <tr><td>25 действий в шахте</td><td><input id="cb19" type="checkbox"></td><td class="reward" data-with="4" data-without="2">8 BP</td></tr>
@@ -3600,7 +3710,11 @@ function updateRewardCellsDisplay(showVip, x2) {
     const {a,b} = getPairFromRewardCell(cell);
     let base = showVip ? b : a;
     if (showVip && b === a) base = a * 2;
-    const displayVal = base * (x2 ? 2 : 1);
+    let displayVal = base * (x2 ? 2 : 1);
+    const row = cell.closest('tr');
+    if (row && row.classList.contains('counter-row')) {
+      displayVal = displayVal * onlineHoursCount;
+    }
     cell.textContent = displayVal + ' BP';
   });
   document.body.classList.toggle('vip-mode', !!showVip);
@@ -3617,6 +3731,12 @@ function computeTotals(showVip, x2) {
     let val = (showVip ? b : a);
     if (showVip && b === a) val = a * 2;
     val = val * (x2 ? 2 : 1);
+    if (row.classList.contains('counter-row')) {
+      const max = parseInt(row.getAttribute('data-counter-max') || '1', 10);
+      sumSelectedTasks += val * onlineHoursCount;
+      possibleTotalTasks += val * max;
+      return;
+    }
     const cb = row.querySelector('input[type="checkbox"]');
     const isFraction = row.classList.contains('fraction-row');
     if (cb && cb.checked) sumSelectedTasks += val;
@@ -3625,6 +3745,67 @@ function computeTotals(showVip, x2) {
   const totalDisplayVal = sumSelectedTasks;
   const remaining = Math.max(0, possibleTotalTasks - sumSelectedTasks);
   return {totalDisplayVal, remaining};
+}
+
+// ── Счётчик "3 часа в онлайне" (многоразовое задание, до 8 раз = 24ч в сутки) ──
+const onlineCounterStorageKey = 'daily_tasks_online_hours_v1';
+function getOnlineCounterKey() { return onlineCounterStorageKey + charSuffix(currentChar); }
+let onlineHoursCount = 0;
+function loadOnlineCounter() {
+  const raw = localStorage.getItem(getOnlineCounterKey());
+  let v = parseInt(raw || '0', 10);
+  if (isNaN(v) || v < 0) v = 0;
+  const row = q('tr.counter-row');
+  const max = row ? parseInt(row.getAttribute('data-counter-max') || '8', 10) : 8;
+  if (v > max) v = max;
+  onlineHoursCount = v;
+  updateOnlineCounterUI();
+}
+function saveOnlineCounter() {
+  localStorage.setItem(getOnlineCounterKey(), String(onlineHoursCount));
+}
+function updateOnlineCounterUI() {
+  const row = q('tr.counter-row');
+  const step = row ? parseInt(row.getAttribute('data-counter-step') || '3', 10) : 3;
+  const max = row ? parseInt(row.getAttribute('data-counter-max') || '8', 10) : 8;
+  const valueEl = q('.online-counter .oc-value');
+  if (valueEl) valueEl.textContent = onlineHoursCount * step;
+  const minusBtn = q('.online-counter .oc-minus');
+  const plusBtn = q('.online-counter .oc-plus');
+  if (minusBtn) minusBtn.disabled = onlineHoursCount <= 0;
+  if (plusBtn) plusBtn.disabled = onlineHoursCount >= max;
+  const cb = document.getElementById('cb43');
+  if (cb) {
+    cb.checked = onlineHoursCount > 0;
+    if (row) row.classList.toggle('done', cb.checked);
+  }
+}
+function attachOnlineCounterListeners() {
+  const widget = q('.online-counter');
+  if (!widget) return;
+  const minus = widget.querySelector('.oc-minus');
+  const plus = widget.querySelector('.oc-plus');
+  const row = widget.closest('tr');
+  const max = row ? parseInt(row.getAttribute('data-counter-max') || '8', 10) : 8;
+  if (minus) minus.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (onlineHoursCount > 0) {
+      onlineHoursCount--;
+      saveOnlineCounter();
+      updateOnlineCounterUI();
+      saveState();
+    }
+  });
+  if (plus) plus.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (onlineHoursCount < max) {
+      onlineHoursCount++;
+      saveOnlineCounter();
+      updateOnlineCounterUI();
+      saveState();
+    }
+  });
+  widget.addEventListener('click', (e) => e.stopPropagation());
 }
 function refreshAll() {
   checkboxes = qa('.tasks-column input[type="checkbox"]');
@@ -3668,6 +3849,7 @@ function loadState() {
   const vipMode = !!JSON.parse(localStorage.getItem(getVipStorageKey()) || 'false');
   const x2Mode = !!JSON.parse(localStorage.getItem(getX2StorageKey()) || 'false');
   vipCheckbox.checked = vipMode; x2Checkbox.checked = x2Mode;
+  loadOnlineCounter();
   refreshAll();
 }
 function saveState() {
@@ -3704,6 +3886,7 @@ function attachRowClickListeners(){
 function onRowClick(e){
   if (e.target.closest('input[type="checkbox"]')) return;
   const row = e.currentTarget;
+  if (row.classList.contains('counter-row')) return; // управляется только кнопками +/-
   const cb = row.querySelector('input[type="checkbox"]');
   if (!cb) return;
   cb.checked = !cb.checked;
@@ -3711,6 +3894,7 @@ function onRowClick(e){
 }
 attachCheckboxListeners();
 attachRowClickListeners();
+attachOnlineCounterListeners();
 vipCheckbox.addEventListener('change', ()=>{ localStorage.setItem(getVipStorageKey(), JSON.stringify(!!vipCheckbox.checked)); refreshAll(); });
 x2Checkbox.addEventListener('change', ()=>{ localStorage.setItem(getX2StorageKey(), JSON.stringify(!!x2Checkbox.checked)); refreshAll(); });
 // ── Проверка завершения каждого столбца ──
@@ -4678,14 +4862,9 @@ body.char2-active .oum-footer-hint {
   const auth = getAuth(app);
   const onlineRef = ref(db, 'online');
 
-  // Ник для списка "онлайн" — читаем реальный логин из базы (users/{uid}/login),
-  // с фоллбеком на старую email-схему для записей без сохранённого логина.
-  async function getNick(uid, email) {
-    try {
-      const snap = await get(ref(db, 'users/' + uid + '/login'));
-      if (snap.exists() && snap.val()) return snap.val();
-    } catch(e) {}
-    return email ? email.split('@')[0].toUpperCase() : '???';
+  function getNick(email) {
+    if (!email) return '???';
+    return email.split('@')[0].toUpperCase();
   }
 
   function updateTooltip(snapshot) {
@@ -4744,12 +4923,22 @@ body.char2-active .oum-footer-hint {
   const sessionId = Math.random().toString(36).slice(2, 9);
 
   // Регистрируем себя по UID_sessionId (одна запись на вкладку, дедупликация в UI)
+  // Ник пересчитывается и обновляется в реальном времени при любом изменении
+  // displayName / displayMode — не только при логине/перезагрузке страницы.
   let _onlineUid = null;
+  let _onlineDn = null;
+  let _onlineMode = 'login';
   let _onlineUserRef = null;
+
+  function _localMode(uid) {
+    try {
+      return localStorage.getItem('displayMode_' + uid) === 'display' ? 'display' : null;
+    } catch(e) { return null; }
+  }
 
   async function _refreshOnlineNick(user) {
     if (!_onlineUserRef) return;
-    const nick = await getNick(user.uid, user.email);
+    const nick = (_onlineMode === 'display' && _onlineDn) ? _onlineDn : getNick(user.email);
     try {
       await set(_onlineUserRef, { nick, uid: user.uid, t: serverTimestamp() });
     } catch(e) {}
@@ -4761,7 +4950,27 @@ body.char2-active .oum-footer-hint {
     _onlineUid = uid;
     _onlineUserRef = ref(db, `online/${uid}/${sessionId}`);
     onDisconnect(_onlineUserRef).remove();
-    _refreshOnlineNick(user);
+
+    // Базовое значение, на случай если данных в Firebase ещё нет
+    _onlineMode = _localMode(uid) || 'login';
+
+    // Флаги: ждём оба значения перед первой записью ника, чтобы не было гонки
+    let _dnLoaded = false;
+    let _modeLoaded = false;
+
+    // Подписка на displayName в реальном времени
+    onValue(ref(db, 'users/' + uid + '/displayName'), (snap) => {
+      _onlineDn = (snap.exists() && snap.val()) ? snap.val() : null;
+      _dnLoaded = true;
+      if (_dnLoaded && _modeLoaded) _refreshOnlineNick(user);
+    });
+
+    // Подписка на displayMode в реальном времени
+    onValue(ref(db, 'users/' + uid + '/displayMode'), (snap) => {
+      _onlineMode = snap.exists() ? snap.val() : (_localMode(uid) || 'login');
+      _modeLoaded = true;
+      if (_dnLoaded && _modeLoaded) _refreshOnlineNick(user);
+    });
   });
 </script>
 
@@ -5968,6 +6177,11 @@ document.getElementById('resetConfirmApply').addEventListener('click', () => {
     resetPopup.classList.remove('show');
     if (typeof qa === 'function' && typeof saveState === 'function') {
       qa('.tasks-column input[type="checkbox"]').forEach(cb => cb.checked = false);
+      if (typeof onlineHoursCount !== 'undefined') {
+        onlineHoursCount = 0;
+        if (typeof saveOnlineCounter === 'function') saveOnlineCounter();
+        if (typeof updateOnlineCounterUI === 'function') updateOnlineCounterUI();
+      }
       saveState();
     }
   };
