@@ -1065,22 +1065,32 @@
           //          единым атомарным update().
           await dbSet(ref(db, 'loginNames/' + loginKey), uid);
 
+          // ВРЕМЕННО (для диагностики): вместо одного атомарного update()
+          // пишем 5 полей по отдельности — так Firebase покажет, какое
+          // ИМЕННО поле рубит правило (при батч-update() он говорит только
+          // общее "permission_denied", без указания пути).
+          const step2Fields = [
+            { path: 'users/' + uid + '/login',   value: login,                                     label: 'users/{uid}/login' },
+            { path: 'users/' + uid + '/email',   value: email,                                     label: 'users/{uid}/email' },
+            { path: 'users/' + uid + '/consent', value: { accepted: true, at: serverTimestamp() },  label: 'users/{uid}/consent' },
+            { path: 'emails/' + eKey,            value: uid,                                       label: 'emails/{key}' },
+            { path: 'loginEmails/' + loginKey,   value: email,                                      label: 'loginEmails/{login}' }
+          ];
           try {
-            const step2 = {};
-            step2['users/' + uid + '/login'] = login;
-            step2['users/' + uid + '/email'] = email;
-            step2['users/' + uid + '/consent'] = { accepted: true, at: serverTimestamp() };
-            step2['emails/' + eKey] = uid;
-            step2['loginEmails/' + loginKey] = email;
-            await dbUpdate(ref(db), step2);
+            for (const f of step2Fields) {
+              try {
+                await dbSet(ref(db, f.path), f.value);
+              } catch (fieldErr) {
+                console.error('Регистрация: ОТКАЗАНО именно на поле → ' + f.label, fieldErr.code, fieldErr.message, fieldErr);
+                throw fieldErr;
+              }
+            }
           } catch (step2Err) {
-            // ВАЖНО ДЛЯ ДИАГНОСТИКИ: печатаем настоящую ошибку в консоль —
-            // сообщение пользователю ниже одинаковое для любой причины сбоя,
-            // а тут виден точный код/текст от Firebase (permission_denied и т.д.)
-            console.error('Регистрация: сбой шага 2 (users/emails/loginEmails):', step2Err.code, step2Err.message, step2Err);
-            // update() атомарен — если он упал, НИ ОДИН из пяти путей
-            // внутри него не записался (users, emails, loginEmails остались
-            // чистыми). Откатывать нужно только шаг 1 — loginNames.
+            // Не атомарно: часть полей выше могла уже записаться, часть — нет.
+            // Откатываем всё, что могло успеть записаться, плюс loginNames.
+            for (const f of step2Fields) {
+              try { await dbSet(ref(db, f.path), null); } catch (e) {}
+            }
             try {
               await dbSet(ref(db, 'loginNames/' + loginKey), null);
             } catch (rbErr) {
