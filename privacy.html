@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ru" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="color-scheme" content="dark">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Политика конфиденциальности — ФАРМ BP</title>
+<link rel="icon" type="image/png" href="https://psv4.userapi.com/s/v1/d2/OS1XuRQbrcwb45XOpQZ3lzZEOnFKmLQhQ-QIga0mxOtLC5nKBS-kWnJ4x13j3wIbtya2vNiAuhxKZg_F5n4RcOzLh3SCJCCNgw4scYil3cy3L8SN2IfuZDqEepVggECnhAAh-t7wuWh8/LIME_COIN.png">
+<style>
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    min-height: 100%;
+    background: #040a14;
+    font-family: system-ui, -apple-system, Roboto, Arial, sans-serif;
+    color: #e5e7eb;
+  }
+  .wrap {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 48px 20px 80px;
+  }
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: rgba(150,210,255,0.6);
+    text-decoration: none;
+    margin-bottom: 28px;
+    transition: color 0.15s ease;
+  }
+  .back-link:hover { color: rgba(0,220,255,0.95); }
+  h1 {
+    font-size: 1.5rem;
+    font-weight: 900;
+    letter-spacing: 1px;
+    margin: 0 0 6px;
+    background: linear-gradient(115deg, #00eeff, #cc44ff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .updated {
+    font-size: 0.78rem;
+    color: rgba(150,210,255,0.45);
+    margin: 0 0 32px;
+  }
+  h2 {
+    font-size: 1.02rem;
+    font-weight: 800;
+    color: #00eeff;
+    text-shadow: 0 0 10px rgba(0,220,255,0.35);
+    margin: 32px 0 10px;
+  }
+  p, li {
+    font-size: 0.92rem;
+    line-height: 1.65;
+    color: rgba(229,231,235,0.88);
+  }
+  ul { margin: 8px 0; padding-left: 20px; }
+  li { margin-bottom: 6px; }
+  .box {
+    background: rgba(0,20,45,0.6);
+    border: 1.5px solid rgba(0,255,255,0.15);
+    border-radius: 14px;
+    padding: 18px 20px;
+    margin-top: 36px;
+  }
+  a.inline { color: #00eeff; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back-link" href="./login.html">← Назад ко входу</a>
+
+  <h1>Политика конфиденциальности</h1>
+  <p class="updated">Обновлено: июль 2026</p>
+
+  <p>Это небольшой фан-проект — трекер прогресса для игроков GTA5RP, а не коммерческий сервис. Ниже простыми словами о том, какие данные собираются и зачем.</p>
+
+  <h2>Что мы собираем</h2>
+  <ul>
+    <li><b>Логин</b> — придуманное вами имя пользователя, по нему вас видят другие в списке "кто онлайн".</li>
+    <li><b>Email</b> — используется только для входа в аккаунт и восстановления пароля.</li>
+    <li><b>Пароль</b> — хранится не в открытом виде, а через сервис Firebase Authentication (Google), который отвечает за безопасное хранение паролей. Мы сами пароль в виде текста нигде не видим и не храним.</li>
+  </ul>
+
+  <h2>Что сохраняется в браузере</h2>
+  <p>Сайт использует локальное хранилище браузера (localStorage), чтобы запомнить:</p>
+  <ul>
+    <li>ваш прогресс по заданиям;</li>
+    <li>выбранного персонажа и его настройки;</li>
+    <li>факт входа в аккаунт, чтобы не просить логиниться заново при каждом заходе.</li>
+  </ul>
+  <p>Эти данные хранятся локально на вашем устройстве и синхронизируются с базой данных только для того, чтобы прогресс не терялся между разными устройствами/браузерами.</p>
+
+  <h2>Кому передаются данные</h2>
+  <p>Никому. На сайте нет рекламы, аналитики или трекеров сторонних компаний. Данные хранятся в базе данных Firebase (сервис Google) и используются исключительно для работы самого сайта.</p>
+
+  <h2>Как удалить свои данные</h2>
+  <p>Если хотите удалить аккаунт и все связанные с ним данные — напишите нам, и мы удалим их вручную.</p>
+
+  <div class="box">
+    <p style="margin:0;">Вопросы по данным или их удалению — пишите: <a class="inline" href="#">укажите свой контакт (Discord/Telegram)</a></p>
+  </div>
+</div>
+</body>
+</html>
