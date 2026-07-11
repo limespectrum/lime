@@ -306,6 +306,9 @@
     transform: none;
     box-shadow: 0 2px 10px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05);
   }
+  .auth-submit.is-loading:disabled {
+    opacity: 1;
+  }
   .auth-submit:disabled::before { opacity: 0.35; animation: none; }
   .auth-submit .ripple {
     position: absolute;
@@ -317,6 +320,52 @@
   }
   @keyframes rippleAnim {
     to { transform: scale(2.6); opacity: 0; }
+  }
+
+  /* ── Состояние "идёт запрос" на кнопках отправки форм ── */
+  .auth-submit .btn-loading {
+    display: none;
+    align-items: center;
+    gap: 9px;
+    position: relative;
+  }
+  .auth-submit.is-loading .btn-icon,
+  .auth-submit.is-loading .btn-label {
+    display: none;
+  }
+  .auth-submit.is-loading .btn-loading {
+    display: flex;
+  }
+  .btn-spinner {
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.22);
+    border-top-color: #fff;
+    flex-shrink: 0;
+    animation: btnSpin 0.65s linear infinite;
+  }
+  @keyframes btnSpin {
+    to { transform: rotate(360deg); }
+  }
+  .btn-dots {
+    display: inline-flex;
+    gap: 3px;
+    margin-left: 1px;
+  }
+  .btn-dots span {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.2;
+    animation: dotBlink 1.1s ease-in-out infinite;
+  }
+  .btn-dots span:nth-child(2) { animation-delay: 0.15s; }
+  .btn-dots span:nth-child(3) { animation-delay: 0.3s; }
+  @keyframes dotBlink {
+    0%, 60%, 100% { opacity: 0.2; transform: scale(0.85); }
+    30% { opacity: 1; transform: scale(1); }
   }
   .forgot-link {
     text-align: center;
@@ -537,6 +586,10 @@
           <path d="M2.5 8h9M8 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
         <span class="btn-label">ВОЙТИ</span>
+        <span class="btn-loading">
+          <span class="btn-spinner"></span>
+          <span>Вход<span class="btn-dots"><span></span><span></span><span></span></span></span>
+        </span>
       </button>
       <div class="forgot-link" onclick="switchView('forgot')">Забыли пароль?</div>
     </div>
@@ -578,6 +631,10 @@
           <path d="M12.6 4.2v4M10.6 6.2h4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
         </svg>
         <span class="btn-label">СОЗДАТЬ АККАУНТ</span>
+        <span class="btn-loading">
+          <span class="btn-spinner"></span>
+          <span>Создаём аккаунт<span class="btn-dots"><span></span><span></span><span></span></span></span>
+        </span>
       </button>
     </div>
 
@@ -592,6 +649,10 @@
           <path d="M6.3 8.7 9.5 5.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
         </svg>
         <span class="btn-label">ОТПРАВИТЬ ССЫЛКУ</span>
+        <span class="btn-loading">
+          <span class="btn-spinner"></span>
+          <span>Отправляем<span class="btn-dots"><span></span><span></span><span></span></span></span>
+        </span>
       </button>
       <div class="forgot-link" onclick="switchView('login')">← Назад ко входу</div>
     </div>
@@ -627,6 +688,10 @@
           <circle cx="8" cy="10.6" r="1.1" fill="currentColor"/>
         </svg>
         <span class="btn-label">СОХРАНИТЬ ПАРОЛЬ</span>
+        <span class="btn-loading">
+          <span class="btn-spinner"></span>
+          <span>Сохраняем<span class="btn-dots"><span></span><span></span><span></span></span></span>
+        </span>
       </button>
     </div>
   </div>
@@ -642,7 +707,7 @@
     sendPasswordResetEmail, verifyPasswordResetCode, confirmPasswordReset
   } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
   import {
-    getDatabase, ref, get, set as dbSet, update as dbUpdate, serverTimestamp
+    getDatabase, ref, get, set as dbSet, update as dbUpdate
   } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
   const firebaseConfig = {
@@ -720,6 +785,12 @@
   function setBtnLabel(btn, text) {
     const label = btn.querySelector('.btn-label');
     if (label) label.textContent = text; else btn.textContent = text;
+  }
+
+  // ── Живое состояние "идёт запрос" на кнопке (спиннер + мигающие точки) ──
+  function setButtonLoading(btn, isLoading) {
+    btn.classList.toggle('is-loading', isLoading);
+    btn.disabled = isLoading;
   }
 
   // ── Ripple-эффект на кнопках отправки форм ──
@@ -807,14 +878,14 @@
         shakeInputs(['resetPassInput','resetPass2Input']);
         return;
       }
-      resetSubmit.disabled = true;
+      setButtonLoading(resetSubmit, true);
       try {
         await confirmPasswordReset(auth, oobCode, p1);
         resetSuccess.textContent = '✓ ПАРОЛЬ ИЗМЕНЁН, ПЕРЕХОД КО ВХОДУ...';
         setTimeout(() => { window.location.href = window.location.pathname; }, 1800);
       } catch (e) {
         resetError.textContent = '✕ ССЫЛКА НЕДЕЙСТВИТЕЛЬНА ИЛИ УСТАРЕЛА';
-        resetSubmit.disabled = false;
+        setButtonLoading(resetSubmit, false);
       }
     });
 
@@ -865,7 +936,7 @@
         shakeInputs(['loginIdentInput','loginPassInput']);
         return;
       }
-      loginSubmit.disabled = true;
+      setButtonLoading(loginSubmit, true);
       let email = ident;
       try {
         if (!ident.includes('@')) {
@@ -873,7 +944,7 @@
           if (!snap.exists()) {
             loginError.textContent = '✕ НЕВЕРНЫЙ ЛОГИН ИЛИ ПАРОЛЬ';
             shakeInputs(['loginIdentInput','loginPassInput']);
-            loginSubmit.disabled = false;
+            setButtonLoading(loginSubmit, false);
             return;
           }
           email = snap.val();
@@ -883,7 +954,7 @@
       } catch (e) {
         loginError.textContent = '✕ НЕВЕРНЫЙ ЛОГИН ИЛИ ПАРОЛЬ';
         shakeInputs(['loginIdentInput','loginPassInput']);
-        loginSubmit.disabled = false;
+        setButtonLoading(loginSubmit, false);
       }
     }
     loginSubmit.addEventListener('click', tryLogin);
@@ -949,8 +1020,7 @@
       const loginKey = login.toUpperCase();
       const eKey = emailKey(email);
 
-      regSubmit.disabled = true;
-      setBtnLabel(regSubmit, '...');
+      setButtonLoading(regSubmit, true);
 
       try {
         const [loginSnap, dispSnap, emailSnap] = await Promise.all([
@@ -961,21 +1031,18 @@
         if (loginSnap.exists() || dispSnap.exists()) {
           regError.textContent = '✕ ЭТОТ ЛОГИН УЖЕ ЗАНЯТ';
           shakeInputs(['regLoginInput']);
-          regSubmit.disabled = false;
-          setBtnLabel(regSubmit, 'СОЗДАТЬ АККАУНТ');
+          setButtonLoading(regSubmit, false);
           return;
         }
         if (emailSnap.exists()) {
           regError.textContent = '✕ ЭТА ПОЧТА УЖЕ ИСПОЛЬЗУЕТСЯ';
           shakeInputs(['regEmailInput']);
-          regSubmit.disabled = false;
-          setBtnLabel(regSubmit, 'СОЗДАТЬ АККАУНТ');
+          setButtonLoading(regSubmit, false);
           return;
         }
       } catch (e) {
         regError.textContent = '✕ ОШИБКА ПРОВЕРКИ, ПОПРОБУЙ ЕЩЁ РАЗ';
-        regSubmit.disabled = false;
-        setBtnLabel(regSubmit, 'СОЗДАТЬ АККАУНТ');
+        setButtonLoading(regSubmit, false);
         return;
       }
 
@@ -984,18 +1051,18 @@
         const cred = await createUserWithEmailAndPassword(auth, email, pass);
         const uid = cred.user.uid;
         try {
-          // ВАЖНО: правило записи в users/{uid}/login (при создании) и в
-          // loginEmails/{login} обе требуют, чтобы root.child('loginNames/'+login)
-          // УЖЕ равнялся auth.uid НА МОМЕНТ проверки правила. Если писать
-          // loginNames одним multi-path update() вместе с путём, который на
-          // неё ссылается через root.child(...), для совершенно нового логина
-          // loginNames в эту секунду ещё не существует в БД с точки зрения
-          // правила — оно не проходит гарантированно, не только в случае гонки.
-          // Поэтому пишем строго ТРЕМЯ последовательными шагами:
-          //   1) loginNames — отдельно, первым, ждём подтверждения сервера;
-          //   2) users/login + users/email + emails — вторым update(),
-          //      когда root уже точно видит loginNames;
-          //   3) loginEmails — третьим, по той же причине.
+          // ВАЖНО: правило записи в users/{uid}/login и loginEmails/{login}
+          // обе требуют, чтобы root.child('loginNames/'+login) УЖЕ равнялся
+          // auth.uid НА МОМЕНТ проверки правила. Для совершенно нового логина
+          // loginNames ещё не существует в БД — поэтому её нужно закоммитить
+          // ПЕРВОЙ, отдельным вызовом. Но users/login, users/email, emails и
+          // loginEmails между собой не зависят — только от уже подтверждённого
+          // loginNames — поэтому их можно и нужно писать ОДНИМ атомарным
+          // multi-path update(): либо весь набор запишется целиком, либо не
+          // запишется вообще ничего (никаких "наполовину").
+          //   ШАГ 1: loginNames — отдельно, первым, ждём подтверждения сервера;
+          //   ШАГ 2: users/login + users/email + emails + loginEmails —
+          //          единым атомарным update().
           await dbSet(ref(db, 'loginNames/' + loginKey), uid);
 
           try {
@@ -1004,23 +1071,12 @@
             step2['users/' + uid + '/email'] = email;
             step2['users/' + uid + '/consent'] = { accepted: true, at: serverTimestamp() };
             step2['emails/' + eKey] = uid;
+            step2['loginEmails/' + loginKey] = email;
             await dbUpdate(ref(db), step2);
-
-            try {
-              await dbSet(ref(db, 'loginEmails/' + loginKey), email);
-            } catch (step3Err) {
-              try {
-                const rollback = {};
-                rollback['users/' + uid] = null;
-                rollback['loginNames/' + loginKey] = null;
-                rollback['emails/' + eKey] = null;
-                await dbUpdate(ref(db), rollback);
-              } catch (rbErr) {
-                console.error('Не удалось откатить частичную запись после сбоя шага 3:', rbErr);
-              }
-              throw step3Err;
-            }
           } catch (step2Err) {
+            // update() атомарен — если он упал, НИ ОДИН из пяти путей
+            // внутри него не записался (users, emails, loginEmails остались
+            // чистыми). Откатывать нужно только шаг 1 — loginNames.
             try {
               await dbSet(ref(db, 'loginNames/' + loginKey), null);
             } catch (rbErr) {
@@ -1043,8 +1099,7 @@
           }
           regError.textContent = '✕ ЛОГИН ТОЛЬКО ЧТО ЗАНЯЛИ, ВЫБЕРИ ДРУГОЙ';
           shakeInputs(['regLoginInput']);
-          regSubmit.disabled = false;
-          setBtnLabel(regSubmit, 'СОЗДАТЬ АККАУНТ');
+          setButtonLoading(regSubmit, false);
           return;
         }
         // Запись логина в базу подтверждена — теперь можно безопасно
@@ -1062,8 +1117,7 @@
         } else {
           regError.textContent = '✕ ОШИБКА: ' + err.code;
         }
-        regSubmit.disabled = false;
-        setBtnLabel(regSubmit, 'СОЗДАТЬ АККАУНТ');
+        setButtonLoading(regSubmit, false);
       }
     }
     regSubmit.addEventListener('click', tryRegister);
@@ -1087,7 +1141,7 @@
         shakeInputs(['forgotIdentInput']);
         return;
       }
-      forgotSubmit.disabled = true;
+      setButtonLoading(forgotSubmit, true);
       let email = ident;
       try {
         if (!ident.includes('@')) {
@@ -1102,7 +1156,7 @@
         // Намеренно не показываем, что аккаунт не найден — не палим базу пользователей
       }
       forgotSuccess.textContent = '✓ ЕСЛИ АККАУНТ НАЙДЕН — ССЫЛКА ОТПРАВЛЕНА НА ПОЧТУ';
-      forgotSubmit.disabled = false;
+      setButtonLoading(forgotSubmit, false);
     }
     forgotSubmit.addEventListener('click', tryForgot);
     forgotIdentInput.addEventListener('input', () => { forgotError.textContent = ''; forgotSuccess.textContent = ''; });
