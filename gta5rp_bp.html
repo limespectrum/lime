@@ -3610,11 +3610,6 @@ function updateCharUI() {
   const circle = document.getElementById('ctpCircle');
   if (label) label.textContent = 'Персонаж ' + currentChar;
   if (circle) circle.textContent = currentChar;
-  const icons = ['⚔️', '🛡️'];
-  const names = ['Персонаж 1', 'Персонаж 2'];
-  const idx = currentChar - 1;
-  const charIndicatorEl = document.getElementById('charIndicator');
-  if (charIndicatorEl) charIndicatorEl.innerHTML = icons[idx] + ' &nbsp;' + names[idx];
   // Цветовой акцент для персонажа 2
   document.body.classList.toggle('char2-active', currentChar === 2);
   updateCharProgressBars();
@@ -4772,13 +4767,11 @@ body.char2-active .oum-footer-hint {
   }
 
   function updateTooltip(snapshot) {
-    const listEl = document.getElementById('onlineNickList');
     const countEl = document.getElementById('onlineCount');
     if (!countEl) return;
 
     if (!snapshot.exists()) {
       countEl.textContent = '0';
-      if (listEl) listEl.innerHTML = '<div class="online-tooltip-empty">никого нет</div>';
       if (typeof window._setOumNicks === 'function') window._setOumNicks([]);
       return;
     }
@@ -4798,15 +4791,6 @@ body.char2-active .oum-footer-hint {
 
     const nicks = entries.map(e => e.nick || '???');
     if (typeof window._setOumNicks === 'function') window._setOumNicks(nicks);
-
-    if (count === 0) {
-      if (listEl) listEl.innerHTML = '<div class="online-tooltip-empty">никого нет</div>';
-      return;
-    }
-
-    if (listEl) listEl.innerHTML = entries
-      .map(e => `<div class="online-tooltip-nick">${e.nick || '???'}</div>`)
-      .join('');
   }
 
   // Клик по счётчику онлайна — открыть модальное окно с именами
