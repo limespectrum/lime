@@ -642,7 +642,7 @@
     sendPasswordResetEmail, verifyPasswordResetCode, confirmPasswordReset
   } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
   import {
-    getDatabase, ref, get, set as dbSet, update as dbUpdate, serverTimestamp
+    getDatabase, ref, get, set as dbSet, update as dbUpdate
   } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
   const firebaseConfig = {
@@ -984,18 +984,18 @@
         const cred = await createUserWithEmailAndPassword(auth, email, pass);
         const uid = cred.user.uid;
         try {
-          // ВАЖНО: правило записи в users/{uid}/login (при создании) и в
-          // loginEmails/{login} обе требуют, чтобы root.child('loginNames/'+login)
-          // УЖЕ равнялся auth.uid НА МОМЕНТ проверки правила. Если писать
-          // loginNames одним multi-path update() вместе с путём, который на
-          // неё ссылается через root.child(...), для совершенно нового логина
-          // loginNames в эту секунду ещё не существует в БД с точки зрения
-          // правила — оно не проходит гарантированно, не только в случае гонки.
-          // Поэтому пишем строго ТРЕМЯ последовательными шагами:
-          //   1) loginNames — отдельно, первым, ждём подтверждения сервера;
-          //   2) users/login + users/email + emails — вторым update(),
-          //      когда root уже точно видит loginNames;
-          //   3) loginEmails — третьим, по той же причине.
+          // ВАЖНО: правило записи в users/{uid}/login и loginEmails/{login}
+          // обе требуют, чтобы root.child('loginNames/'+login) УЖЕ равнялся
+          // auth.uid НА МОМЕНТ проверки правила. Для совершенно нового логина
+          // loginNames ещё не существует в БД — поэтому её нужно закоммитить
+          // ПЕРВОЙ, отдельным вызовом. Но users/login, users/email, emails и
+          // loginEmails между собой не зависят — только от уже подтверждённого
+          // loginNames — поэтому их можно и нужно писать ОДНИМ атомарным
+          // multi-path update(): либо весь набор запишется целиком, либо не
+          // запишется вообще ничего (никаких "наполовину").
+          //   ШАГ 1: loginNames — отдельно, первым, ждём подтверждения сервера;
+          //   ШАГ 2: users/login + users/email + emails + loginEmails —
+          //          единым атомарным update().
           await dbSet(ref(db, 'loginNames/' + loginKey), uid);
 
           try {
@@ -1004,23 +1004,12 @@
             step2['users/' + uid + '/email'] = email;
             step2['users/' + uid + '/consent'] = { accepted: true, at: serverTimestamp() };
             step2['emails/' + eKey] = uid;
+            step2['loginEmails/' + loginKey] = email;
             await dbUpdate(ref(db), step2);
-
-            try {
-              await dbSet(ref(db, 'loginEmails/' + loginKey), email);
-            } catch (step3Err) {
-              try {
-                const rollback = {};
-                rollback['users/' + uid] = null;
-                rollback['loginNames/' + loginKey] = null;
-                rollback['emails/' + eKey] = null;
-                await dbUpdate(ref(db), rollback);
-              } catch (rbErr) {
-                console.error('Не удалось откатить частичную запись после сбоя шага 3:', rbErr);
-              }
-              throw step3Err;
-            }
           } catch (step2Err) {
+            // update() атомарен — если он упал, НИ ОДИН из пяти путей
+            // внутри него не записался (users, emails, loginEmails остались
+            // чистыми). Откатывать нужно только шаг 1 — loginNames.
             try {
               await dbSet(ref(db, 'loginNames/' + loginKey), null);
             } catch (rbErr) {
