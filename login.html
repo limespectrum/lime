@@ -338,6 +338,57 @@
     margin-top: -8px;
     text-transform: none;
   }
+  .consent-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 2px 2px;
+    margin-top: 2px;
+  }
+  .consent-row input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+    margin-top: 1px;
+    border-radius: 5px;
+    border: 2px solid rgba(0,255,255,0.35);
+    background: rgba(0,20,45,0.85);
+    cursor: pointer;
+    position: relative;
+    transition: all 0.15s ease;
+  }
+  .consent-row input[type="checkbox"]:hover {
+    border-color: rgba(0,255,255,0.6);
+  }
+  .consent-row input[type="checkbox"]:checked {
+    background: linear-gradient(135deg, #00c2e0, #7a3ff0);
+    border-color: rgba(0,255,255,0.7);
+    box-shadow: 0 0 10px rgba(0,220,255,0.4);
+  }
+  .consent-row input[type="checkbox"]:checked::after {
+    content: '';
+    position: absolute;
+    left: 5px; top: 1px;
+    width: 5px; height: 9px;
+    border: solid #04101f;
+    border-width: 0 2px 2px 0;
+    transform: rotate(40deg);
+  }
+  .consent-row label {
+    font-size: 0.74rem;
+    line-height: 1.45;
+    color: rgba(200,220,255,0.65);
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .consent-row label a {
+    color: #00eeff;
+    text-decoration: none;
+  }
+  .consent-row label a:hover { text-decoration: underline; }
   @keyframes shake {
     0%,100%{ transform: translateX(0); }
     20%    { transform: translateX(-8px); }
@@ -516,7 +567,11 @@
         </button>
       </div>
       <div class="pin-error" id="regError"></div>
-      <button type="button" class="auth-submit" id="regSubmit">
+      <div class="consent-row">
+        <input type="checkbox" id="regConsentInput">
+        <label for="regConsentInput">Я согласен(на) с обработкой персональных данных и <a href="./privacy.html" target="_blank">Политикой конфиденциальности</a>, а также с использованием localStorage/cookie для работы сайта</label>
+      </div>
+      <button type="button" class="auth-submit" id="regSubmit" disabled>
         <svg class="btn-icon" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
           <circle cx="6.2" cy="5.5" r="2.6" stroke="currentColor" stroke-width="1.4"/>
           <path d="M1.5 14.2c0-3 2.1-4.9 4.7-4.9s4.7 1.9 4.7 4.9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
@@ -844,6 +899,11 @@
     const regPass2Input = document.getElementById('regPass2Input');
     const regError = document.getElementById('regError');
     const regSubmit = document.getElementById('regSubmit');
+    const regConsentInput = document.getElementById('regConsentInput');
+
+    regConsentInput.addEventListener('change', () => {
+      regSubmit.disabled = !regConsentInput.checked;
+    });
 
     async function tryRegister() {
       regError.textContent = '';
@@ -852,6 +912,10 @@
       const pass = regPassInput.value;
       const pass2 = regPass2Input.value;
 
+      if (!regConsentInput.checked) {
+        regError.textContent = '✕ НУЖНО СОГЛАСИЕ НА ОБРАБОТКУ ДАННЫХ';
+        return;
+      }
       if (!login || !email || !pass || !pass2) {
         regError.textContent = '✕ ЗАПОЛНИТЕ ВСЕ ПОЛЯ';
         return;
