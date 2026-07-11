@@ -707,7 +707,7 @@
     sendPasswordResetEmail, verifyPasswordResetCode, confirmPasswordReset
   } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
   import {
-    getDatabase, ref, get, set as dbSet, update as dbUpdate
+    getDatabase, ref, get, set as dbSet, update as dbUpdate, serverTimestamp
   } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
   const firebaseConfig = {
@@ -1065,32 +1065,19 @@
           //          единым атомарным update().
           await dbSet(ref(db, 'loginNames/' + loginKey), uid);
 
-          // ВРЕМЕННО (для диагностики): вместо одного атомарного update()
-          // пишем 5 полей по отдельности — так Firebase покажет, какое
-          // ИМЕННО поле рубит правило (при батч-update() он говорит только
-          // общее "permission_denied", без указания пути).
-          const step2Fields = [
-            { path: 'users/' + uid + '/login',   value: login,                                     label: 'users/{uid}/login' },
-            { path: 'users/' + uid + '/email',   value: email,                                     label: 'users/{uid}/email' },
-            { path: 'users/' + uid + '/consent', value: { accepted: true, at: serverTimestamp() },  label: 'users/{uid}/consent' },
-            { path: 'emails/' + eKey,            value: uid,                                       label: 'emails/{key}' },
-            { path: 'loginEmails/' + loginKey,   value: email,                                      label: 'loginEmails/{login}' }
-          ];
           try {
-            for (const f of step2Fields) {
-              try {
-                await dbSet(ref(db, f.path), f.value);
-              } catch (fieldErr) {
-                console.error('Регистрация: ОТКАЗАНО именно на поле → ' + f.label, fieldErr.code, fieldErr.message, fieldErr);
-                throw fieldErr;
-              }
-            }
+            const step2 = {};
+            step2['users/' + uid + '/login'] = login;
+            step2['users/' + uid + '/email'] = email;
+            step2['users/' + uid + '/consent'] = { accepted: true, at: serverTimestamp() };
+            step2['emails/' + eKey] = uid;
+            step2['loginEmails/' + loginKey] = email;
+            await dbUpdate(ref(db), step2);
           } catch (step2Err) {
-            // Не атомарно: часть полей выше могла уже записаться, часть — нет.
-            // Откатываем всё, что могло успеть записаться, плюс loginNames.
-            for (const f of step2Fields) {
-              try { await dbSet(ref(db, f.path), null); } catch (e) {}
-            }
+            console.error('Регистрация: сбой шага 2 (users/emails/loginEmails):', step2Err.code, step2Err.message, step2Err);
+            // update() атомарен — если он упал, НИ ОДИН из пяти путей
+            // внутри него не записался (users, emails, loginEmails остались
+            // чистыми). Откатывать нужно только шаг 1 — loginNames.
             try {
               await dbSet(ref(db, 'loginNames/' + loginKey), null);
             } catch (rbErr) {
