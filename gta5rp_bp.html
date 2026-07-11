@@ -4472,8 +4472,6 @@ loadHiddenColumns();
   const months = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
   const days = ['ВОСКРЕСЕНЬЕ','ПОНЕДЕЛЬНИК','ВТОРНИК','СРЕДА','ЧЕТВЕРГ','ПЯТНИЦА','СУББОТА'];
 
-  function pad(n){ return String(n).padStart(2,'0'); }
-
   function tick() {
     const now = new Date();
     const dayName = document.getElementById('dateDayName');
@@ -5196,14 +5194,6 @@ document.getElementById('resetConfirmApply').addEventListener('click', () => {
     if (!col) return;
     col.dataset.customColor = hex;
     injectColStyles(colId, hex);
-  }
-
-  function removeColor(colId) {
-    const col = document.getElementById(colId);
-    if (col) delete col.dataset.customColor;
-    localStorage.removeItem(colorKey(colId));
-    const old = document.getElementById('col-custom-style-' + colId);
-    if (old) old.remove();
   }
 
   function saveColor(colId, hex) {
@@ -6022,10 +6012,6 @@ document.getElementById('resetConfirmApply').addEventListener('click', () => {
   });
 })();
 </script>
-
-<div class="online-tooltip" id="onlineTooltip" style="display:none!important;"></div>
-<div style="display:none"><!-- legacy tooltip placeholder --></div>
-
 
 
 <div id="profileMenu" style="
