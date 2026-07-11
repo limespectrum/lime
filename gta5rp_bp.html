@@ -940,16 +940,19 @@
   }
   .column table { width:100%; border-collapse:collapse; }
   .column td { padding:8px 10px; border-bottom:1px solid rgba(255,255,255,0.08); vertical-align:middle; color:#e5e7eb; user-select:none; -webkit-user-select:none; cursor:pointer; }
-  /* Фиксированные ширины колонок в таблице заданий: чтобы широкий счётчик
-     "3 часа в онлайне" не растягивал 2-ю колонку и не сдвигал текст
-     остальных заданий в этом же столбце. Ширину "теряет" только сам
-     счётчик (переполняет свою ячейку), другие строки не затрагиваются. */
-  .tasks-column { table-layout: fixed; }
-  .tasks-column td:first-child { width: calc(100% - 140px); overflow-wrap: break-word; word-break: break-word; }
-  .tasks-column td:nth-child(2) { text-align: right; width: 46px; overflow: visible; position: relative; }
-  .tasks-column td:nth-child(3) { width: 54px; }
-  .tasks-column tr.counter-row td:nth-child(2) { overflow: visible; }
-  .tasks-column tr.counter-row .online-counter { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); z-index: 2; }
+  .tasks-column td:nth-child(2) { text-align: right; }
+  /* Счётчик "3 часа в онлайне" выводится поверх обычной раскладки (position: absolute),
+     поэтому не влияет на ширину колонок таблицы — остальные задания в этом же столбце
+     выглядят точно так же, как в столбцах без этого задания, а сам виджет не наезжает
+     на награду справа. */
+  tr.counter-row > td:nth-child(2) { position: relative; }
+  tr.counter-row .online-counter {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    z-index: 1;
+  }
   .column .reward { white-space:nowrap; font-weight:700; }
 
   /* Когда видна только 1-2 категории, разворачиваем задания в несколько колонок внутри блока */
