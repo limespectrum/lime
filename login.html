@@ -642,7 +642,7 @@
     sendPasswordResetEmail, verifyPasswordResetCode, confirmPasswordReset
   } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
   import {
-    getDatabase, ref, get, set as dbSet, update as dbUpdate
+    getDatabase, ref, get, set as dbSet, update as dbUpdate, serverTimestamp
   } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
   const firebaseConfig = {
@@ -1002,6 +1002,7 @@
             const step2 = {};
             step2['users/' + uid + '/login'] = login;
             step2['users/' + uid + '/email'] = email;
+            step2['users/' + uid + '/consent'] = { accepted: true, at: serverTimestamp() };
             step2['emails/' + eKey] = uid;
             await dbUpdate(ref(db), step2);
 
