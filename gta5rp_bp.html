@@ -1178,18 +1178,6 @@
     );
     box-shadow: 0 0 6px rgba(0,220,210,0.6), 0 0 18px rgba(0,220,210,0.25);
   }
-  body.char2-active #resetBtn {
-    background: radial-gradient(circle, rgba(0,225,215,0.30), rgba(0,210,200,0.14));
-    border-color: rgba(0,225,215,0.75);
-    color: #d0fff8;
-    box-shadow: 0 0 10px rgba(0,220,210,0.65), 0 0 24px rgba(0,220,210,0.3);
-  }
-  body.char2-active #resetBtn:hover {
-    background: radial-gradient(circle, rgba(0,225,215,0.45), rgba(0,210,200,0.22));
-    border-color: rgba(0,255,245,1);
-    box-shadow: 0 0 16px rgba(0,220,210,0.85), 0 0 36px rgba(0,220,210,0.4);
-    color: #fff;
-  }
   body.char2-active .total {
     background: linear-gradient(90deg, rgba(57,255,100,0.85) 0%, rgba(0,210,200,0.6) 50%, rgba(0,180,170,0.85) 100%);
     box-shadow:
@@ -1330,58 +1318,8 @@
 /* Выполнено — зелёная подсветка онлайн-задания */
 
 
-/* Кнопка сброса прогресса — кружок на месте бывшего ромба-разделителя */
-#resetBtn {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  width: 38px;
-  height: 38px;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(220,120,255,0.30), rgba(180,80,255,0.14));
-  border: 1.5px solid rgba(220,120,255,0.75);
-  color: #f0d9ff;
-  box-shadow: 0 0 10px rgba(180,80,255,0.65), 0 0 24px rgba(180,80,255,0.3);
-  cursor: pointer;
-  user-select: none;
-  -webkit-user-select: none;
-  transition: all 0.25s ease;
-  /* Перекрываем линию-разделитель: псевдоэлемент-заглушка под кнопкой */
-  isolation: isolate;
-}
-/* Непрозрачный круг-«пробка», скрывающий линию разделителя внутри кнопки */
-#resetBtn::before {
-  content: '';
-  position: absolute;
-  inset: -2px;
-  border-radius: 50%;
-  background: #0b1220;
-  z-index: -1;
-}
-body.char2-active #resetBtn::before {
-  background: #0b1220;
-}
-#resetBtn svg {
-  width: 17px;
-  height: 17px;
-  display: block;
-  pointer-events: none;
-}
-#resetBtn:hover {
-  transform: translate(-50%, -50%) scale(1.12);
-  background: radial-gradient(circle, rgba(220,120,255,0.45), rgba(180,80,255,0.22));
-  border-color: rgba(230,150,255,1);
-  box-shadow: 0 0 16px rgba(180,80,255,0.85), 0 0 36px rgba(180,80,255,0.4);
-  color: #fff;
-}
-#resetBtn:active {
-  transform: translate(-50%, -50%) scale(0.95);
-}
+/* Кнопка сброса прогресса — теперь компактная круглая иконка в виджете
+   баланса (см. класс .bp-reset-btn), а не отдельный кружок в разделителе */
 
 /* ── ЗАВЕРШЕНО оверлей столбца ── */
 .column {
@@ -1803,6 +1741,15 @@ body.char2-active .filter-btn.active[data-col="col-fraction"]:hover {
   }
   .cosmos-popup-btn-yes-danger:hover {
     box-shadow: 0 0 14px rgba(255,60,100,0.55);
+    transform: scale(1.05);
+  }
+  .cosmos-popup-btn-yes-newday {
+    background: linear-gradient(135deg, rgba(255,190,30,0.32), rgba(255,140,0,0.22));
+    border-color: rgba(255,200,60,0.65);
+    color: #ffe8b0;
+  }
+  .cosmos-popup-btn-yes-newday:hover {
+    box-shadow: 0 0 14px rgba(255,190,30,0.55);
     transform: scale(1.05);
   }
 
@@ -2247,6 +2194,196 @@ body.char2-active .filter-btn.active[data-col="col-fraction"]:hover {
     border-color: rgba(57,255,100,0.22);
     box-shadow: 0 0 12px rgba(57,255,100,0.1);
   }
+  /* ══════════════════════════════════════════
+     🧪 ЭКСПЕРИМЕНТАЛЬНАЯ ФУНКЦИЯ: БАЛАНС BP (beta)
+     Прикреплена по центру над блоком «Выполнено / Осталось» —
+     дизайн выполнен в той же неоновой палитре, что и сам блок
+     (циан-пурпур-розовый у персонажа 1, зелёно-бирюзовый у
+     персонажа 2), чтобы выглядеть единым визуальным элементом.
+     Логика — в отдельном <script> в конце body.
+  ══════════════════════════════════════════ */
+  .total-wrap {
+    position: relative;
+    margin-top: 10px;
+  }
+  .bp-balance-widget {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    transform: translate(-50%, 0%);
+    z-index: 5;
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    padding: 11px 26px 11px 24px;
+    border-radius: 0 0 40px 40px;
+    background: linear-gradient(90deg, rgba(0,210,255,0.9) 0%, rgba(180,80,255,0.75) 50%, rgba(255,80,160,0.9) 100%);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.45), 0 0 22px rgba(180,80,255,0.25);
+    white-space: nowrap;
+    user-select: none;
+    -webkit-user-select: none;
+    transition: box-shadow 0.25s ease;
+  }
+  .bp-balance-widget::before {
+    content: '';
+    position: absolute;
+    inset: 1.5px;
+    border-radius: 0 0 38px 38px;
+    background: rgba(6,14,28,0.94);
+    z-index: -1;
+  }
+  .bp-balance-widget:hover {
+    box-shadow: 0 4px 18px rgba(0,0,0,0.5), 0 0 26px rgba(180,80,255,0.35);
+  }
+  .bp-balance-label {
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(190,220,255,0.65);
+    font-family: monospace;
+    flex-shrink: 0;
+  }
+  .bp-balance-value-wrap {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+  .bp-balance-input {
+    width: 1ch;
+    min-width: 1ch;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid rgba(0,210,255,0.35);
+    color: transparent;
+    background-image: linear-gradient(135deg, #a8f0ff, #cc99ff, #ff9ecf);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    caret-color: #d9c9ff;
+    filter: drop-shadow(0 0 8px rgba(180,120,255,0.5));
+    font-family: monospace;
+    font-weight: 900;
+    font-size: 1.7rem;
+    text-align: right;
+    padding: 0 2px 2px;
+    outline: none;
+    transition: border-color 0.18s ease, width 0.12s ease;
+  }
+  .bp-balance-input:focus {
+    border-bottom-color: rgba(180,80,255,0.85);
+  }
+  .bp-balance-input::-webkit-outer-spin-button,
+  .bp-balance-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .bp-balance-suffix {
+    font-size: 1.2rem;
+    font-weight: 900;
+    letter-spacing: 0.5px;
+    color: #d9baff;
+    text-shadow: 0 0 8px rgba(200,140,255,0.6), 0 0 16px rgba(180,80,255,0.3);
+    font-family: monospace;
+    flex-shrink: 0;
+  }
+  .bp-newday-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 18px;
+    border-radius: 30px;
+    border: 1.5px solid rgba(255,205,90,0.45);
+    background: rgba(6,14,28,0.55);
+    color: #f0dcae;
+    font-size: 0.74rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    white-space: nowrap;
+    font-family: monospace;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+  }
+  .bp-newday-icon { filter: drop-shadow(0 0 4px rgba(255,220,120,0.8)); }
+  .bp-newday-btn:hover {
+    background: rgba(6,14,28,0.75);
+    border-color: rgba(255,215,110,0.75);
+    box-shadow: 0 0 12px rgba(255,205,90,0.3);
+    transform: scale(1.04);
+  }
+  .bp-newday-btn:active {
+    transform: scale(0.96);
+  }
+  .bp-reset-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    border-radius: 50%;
+    border: 1.5px solid rgba(255,90,120,0.75);
+    background: rgba(255,50,90,0.16);
+    color: #ffd0dc;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+  }
+  .bp-reset-btn svg {
+    width: 17px;
+    height: 17px;
+    display: block;
+    pointer-events: none;
+  }
+  .bp-reset-btn:hover {
+    background: rgba(255,50,90,0.28);
+    border-color: rgba(255,110,140,1);
+    box-shadow: 0 0 14px rgba(255,60,100,0.45);
+    color: #fff;
+    transform: scale(1.08);
+  }
+  .bp-reset-btn:active {
+    transform: scale(0.94);
+  }
+
+  /* ── ПЕРСОНАЖ 2: зелёно-бирюзовая палитра виджета баланса ── */
+  body.char2-active .bp-balance-widget {
+    background: linear-gradient(90deg, rgba(57,255,100,0.9) 0%, rgba(0,210,200,0.8) 50%, rgba(0,180,170,0.9) 100%);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.45), 0 0 22px rgba(0,210,200,0.3);
+  }
+  body.char2-active .bp-balance-widget:hover {
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5), 0 0 30px rgba(0,220,210,0.45);
+  }
+  body.char2-active .bp-balance-label { color: rgba(170,255,220,0.7); }
+  body.char2-active .bp-balance-input {
+    border-bottom-color: rgba(57,255,100,0.4);
+    background-image: linear-gradient(135deg, #b8ffd0, #39ff9c, #00d8c8);
+    caret-color: #baffe0;
+    filter: drop-shadow(0 0 8px rgba(57,255,150,0.55));
+  }
+  body.char2-active .bp-balance-input:focus { border-bottom-color: rgba(0,220,210,0.9); }
+  body.char2-active .bp-balance-suffix {
+    color: #baffe8;
+    text-shadow: 0 0 8px rgba(80,255,190,0.6), 0 0 16px rgba(0,220,210,0.35);
+  }
+
+  @media (max-width: 700px) {
+    .total-wrap { margin-top: 34px; }
+    .bp-balance-widget {
+      gap: 10px;
+      padding: 9px 16px 9px 16px;
+      flex-wrap: wrap;
+      justify-content: center;
+      max-width: 92vw;
+      transform: translate(-50%, -20%);
+    }
+    .bp-balance-input { font-size: 1.4rem; width: 6.2ch; }
+  }
+
   /* ── PINNED SERVER WIDGET ── */
   #pinnedServer {
     display: inline-flex;
@@ -2432,6 +2569,38 @@ body.char2-active .filter-btn.active[data-col="col-fraction"]:hover {
 </head>
 <body>
 
+<script>
+  // ══════════════════════════════════════════════════════════════
+  // 🗂️ ГЛОБАЛЬНЫЙ МЕНЕДЖЕР ПОПАПОВ
+  // ------------------------------------------------------------
+  // Любой попап, который хочет открыться, должен перед этим
+  // вызвать window.PopupManager.closeAllExcept('свойID'), либо
+  // просто window.PopupManager.closeAll() — тогда все остальные
+  // зарегистрированные попапы закроются сами (через свою же
+  // функцию close, со всеми побочными эффектами вроде сброса
+  // подсветки кнопки).
+  // ══════════════════════════════════════════════════════════════
+  window.PopupManager = (function () {
+    const registry = {};
+    return {
+      register(id, closeFn) {
+        registry[id] = closeFn;
+      },
+      closeAllExcept(exceptId) {
+        Object.keys(registry).forEach((id) => {
+          if (id === exceptId) return;
+          try { registry[id](); } catch (e) {}
+        });
+      },
+      closeAll() {
+        Object.keys(registry).forEach((id) => {
+          try { registry[id](); } catch (e) {}
+        });
+      }
+    };
+  })();
+</script>
+
 <canvas id="cosmosCanvas"></canvas>
 
 <!-- ██ PIN LOCK SCREEN ██ -->
@@ -2575,7 +2744,10 @@ body.char2-active .filter-btn.active[data-col="col-fraction"]:hover {
     'task_highlight_color_v2_char1',
     'task_highlight_color_v2_char2',
     'cosmos_active',
-    'pinned_server_v1'
+    'pinned_server_v1',
+    // 🧪 ЭКСПЕРИМЕНТАЛЬНО: баланс BP персонажа (см. блок скрипта в конце body)
+    'bp_balance_v1',
+    'bp_balance_v1_char2'
   ];
   const SYNC_KEY_SET = new Set(SYNC_KEYS);
   let currentUid = null;
@@ -3302,6 +3474,31 @@ body.char2-active .filter-btn.active[data-col="col-fraction"]:hover {
 </div> <!-- /super-panel -->
 <div class="panel-connector"><span class="connector-node"></span></div>
 
+<div class="total-wrap" id="totalWrap">
+  <!-- ══════════════════════════════════════════════════════════
+       🧪 ЭКСПЕРИМЕНТАЛЬНАЯ ФУНКЦИЯ: БАЛАНС BP ПЕРСОНАЖА (beta)
+       Логика полностью в скрипте в конце <body> — блок с тем же
+       заголовком "ЭКСПЕРИМЕНТАЛЬНАЯ ФУНКЦИЯ: БАЛАНС BP". При
+       необходимости отключить/удалить — достаточно убрать этот
+       <div id="bpBalanceWidget"> и соответствующий <script>.
+       ══════════════════════════════════════════════════════════ -->
+  <div class="bp-balance-widget" id="bpBalanceWidget">
+    <span class="bp-balance-label">Мой баланс</span>
+    <div class="bp-balance-value-wrap">
+      <input type="text" id="bpBalanceInput" class="bp-balance-input" inputmode="numeric" autocomplete="off" maxlength="7" value="0">
+      <span class="bp-balance-suffix">BP</span>
+    </div>
+    <button type="button" id="bpNewDayBtn" class="bp-newday-btn" title="Зафиксировать сегодняшний прогресс в баланс и начать новый день (задания сбросятся)"><span class="bp-newday-icon">☀</span>Новый день</button>
+    <button id="resetBtn" class="bp-reset-btn" title="Сбросить прогресс заданий. Если «Новый день» не был нажат — сегодняшние BP спишутся с баланса">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M3 11a9 9 0 0 1 15.5-5.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <path d="M21 13a9 9 0 0 1-15.5 5.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <path d="M21 3v6h-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M3 21v-6h6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+  </div>
+
 <div class="total">
   <div class="total-split">
     <div class="total-card card-done">
@@ -3316,16 +3513,7 @@ body.char2-active .filter-btn.active[data-col="col-fraction"]:hover {
         <div class="task-progress-label" id="taskProgressLabel">0 / 0 заданий</div>
       </div>
     </div>
-    <div class="total-divider">
-      <button id="resetBtn" title="Сбросить прогресс заданий">
-        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M3 11a9 9 0 0 1 15.5-5.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          <path d="M21 13a9 9 0 0 1-15.5 5.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          <path d="M21 3v6h-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M3 21v-6h6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </button>
-    </div>
+    <div class="total-divider"></div>
     <div class="total-card card-left">
       <div class="card-label">Осталось</div>
       <div class="card-value-row">
@@ -3334,6 +3522,7 @@ body.char2-active .filter-btn.active[data-col="col-fraction"]:hover {
     </div>
   </div>
 </div>
+</div> <!-- /total-wrap -->
 
 <div class="edit-mode-banner" id="editModeBanner">
     <div style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:14px;position:relative;flex-wrap:wrap;">
@@ -5127,6 +5316,7 @@ document.getElementById('resetConfirmApply').addEventListener('click', () => {
         closePopup();
         return;
       }
+      window.PopupManager.closeAllExcept('colorPickerPopup');
       const colId = dot.dataset.colId;
       activeDot = dot;
       activeColId = colId;
@@ -5160,6 +5350,7 @@ document.getElementById('resetConfirmApply').addEventListener('click', () => {
     activeDot = null;
     activeColId = null;
   }
+  window.PopupManager.register('colorPickerPopup', closePopup);
 
   document.addEventListener('click', function(e) {
     if (!popup.classList.contains('show')) return;
@@ -5282,6 +5473,15 @@ document.getElementById('resetConfirmApply').addEventListener('click', () => {
     applyColor('green');
   };
 
+  function closeTaskHighlightPopup() {
+    const popup = document.getElementById('taskHighlightPopup');
+    const btn = document.getElementById('taskHighlightBtn');
+    if (!popup || !popup.classList.contains('show')) return;
+    popup.classList.remove('show');
+    if (btn) { btn.style.borderColor = ''; btn.style.color = ''; btn.style.background = ''; }
+  }
+  window.PopupManager.register('taskHighlightPopup', closeTaskHighlightPopup);
+
   window.toggleTaskHighlightPopup = function(e) {
     if (e) e.stopPropagation();
     const popup = document.getElementById('taskHighlightPopup');
@@ -5289,6 +5489,7 @@ document.getElementById('resetConfirmApply').addEventListener('click', () => {
     if (!popup || !btn) return;
     const isOpen = popup.classList.contains('show');
     if (!isOpen) {
+      window.PopupManager.closeAllExcept('taskHighlightPopup');
       updateTestRow(getCurrentColor());
       updateSwatchSelection(getCurrentColor());
     }
@@ -5303,8 +5504,7 @@ document.getElementById('resetConfirmApply').addEventListener('click', () => {
     const btn = document.getElementById('taskHighlightBtn');
     if (!popup || !popup.classList.contains('show')) return;
     if (popup.contains(e.target) || (btn && btn.contains(e.target))) return;
-    popup.classList.remove('show');
-    if (btn) { btn.style.borderColor = ''; btn.style.color = ''; btn.style.background = ''; }
+    closeTaskHighlightPopup();
   });
 
   // Применяем цвет при смене персонажа — только если изменился char2-active
@@ -5345,10 +5545,18 @@ document.getElementById('resetConfirmApply').addEventListener('click', () => {
 </div>
 
 <div class="cosmos-popup" id="resetProgressPopup">
-  <div class="cosmos-popup-text">СБРОСИТЬ <span style="color:#ff5577;font-weight:900;text-shadow:0 0 8px rgba(255,60,100,0.6);">ПРОГРЕСС ЗАДАНИЙ</span>?</div>
+  <div class="cosmos-popup-text">СБРОСИТЬ <span style="color:#ff5577;font-weight:900;text-shadow:0 0 8px rgba(255,60,100,0.6);">ПРОГРЕСС ЗАДАНИЙ</span>?<br><span style="font-weight:600;opacity:0.75;font-size:0.9em;">Если «Новый день» не был нажат — сегодняшние BP спишутся с баланса.</span></div>
   <div class="cosmos-popup-actions">
     <button type="button" class="cosmos-popup-btn cosmos-popup-btn-yes-danger" onclick="confirmResetProgress(event)">Да</button>
     <button type="button" class="cosmos-popup-btn cosmos-popup-btn-no" onclick="closeResetProgressPopup(event)">Нет</button>
+  </div>
+</div>
+
+<div class="cosmos-popup" id="bpNewDayPopup">
+  <div class="cosmos-popup-text">Зафиксировать <span style="color:#ffd766;font-weight:900;text-shadow:0 0 8px rgba(255,190,30,0.6);">сегодняшний баланс</span> и начать новый день?<br><span style="font-weight:600;opacity:0.75;font-size:0.9em;">Все выполненные задания будут сброшены.</span></div>
+  <div class="cosmos-popup-actions">
+    <button type="button" class="cosmos-popup-btn cosmos-popup-btn-yes-newday" id="bpNewDayYesBtn" onclick="confirmBpNewDay(event)">Да</button>
+    <button type="button" class="cosmos-popup-btn cosmos-popup-btn-no" onclick="closeBpNewDayPopup(event)">Нет</button>
   </div>
 </div>
 
@@ -5485,6 +5693,7 @@ document.getElementById('resetConfirmApply').addEventListener('click', () => {
     if (cosmosTransitioning) return;
     const willShow = !cosmosPopup.classList.contains('show');
     if (willShow) {
+      window.PopupManager.closeAllExcept('cosmosPopup');
       cosmosPopupText.innerHTML = cosmosActive
         ? '<span style="color:#ff2d6b;font-weight:900;">Отключить</span> анимацию космоса?'
         : '<span style="color:#ffe033;font-weight:900;">Включить</span> анимацию космоса?';
@@ -5523,6 +5732,7 @@ document.getElementById('resetConfirmApply').addEventListener('click', () => {
     if (e) e.stopPropagation();
     cosmosPopup.classList.remove('show');
   };
+  window.PopupManager.register('cosmosPopup', window.closeCosmosPopup);
 
   window.confirmCosmosToggle = function(e) {
     if (e) e.stopPropagation();
@@ -5981,6 +6191,7 @@ document.getElementById('resetConfirmApply').addEventListener('click', () => {
         charPopupText.innerHTML = 'ВЫБРАТЬ <span style="color:#00d2ff;font-weight:900;text-shadow:0 0 8px rgba(0,200,255,0.7);">ПЕРСОНАЖ 1</span>';
         charPopupYesBtn.className = 'cosmos-popup-btn char-popup-yes-blue';
       }
+      window.PopupManager.closeAllExcept('charPopup');
       positionCharPopup();
       charPopup.classList.add('show');
     } else {
@@ -5992,6 +6203,7 @@ document.getElementById('resetConfirmApply').addEventListener('click', () => {
     if (e) e.stopPropagation();
     charPopup.classList.remove('show');
   };
+  window.PopupManager.register('charPopup', window.closeCharPopup);
 
   window.confirmCharSwitch = function(e) {
     if (e) e.stopPropagation();
@@ -6040,6 +6252,7 @@ document.getElementById('resetConfirmApply').addEventListener('click', () => {
     e.stopPropagation();
     const willShow = !resetPopup.classList.contains('show');
     if (willShow) {
+      window.PopupManager.closeAllExcept('resetProgressPopup');
       positionResetPopup();
       resetPopup.classList.add('show');
     } else {
@@ -6051,6 +6264,7 @@ document.getElementById('resetConfirmApply').addEventListener('click', () => {
     if (e) e.stopPropagation();
     resetPopup.classList.remove('show');
   };
+  window.PopupManager.register('resetProgressPopup', window.closeResetProgressPopup);
 
   window.confirmResetProgress = function(e) {
     if (e) e.stopPropagation();
@@ -6071,6 +6285,221 @@ document.getElementById('resetConfirmApply').addEventListener('click', () => {
     if (resetPopup.contains(e.target) || resetBtn.contains(e.target)) return;
     resetPopup.classList.remove('show');
   });
+})();
+</script>
+
+<!-- ══════════════════════════════════════════════════════════════
+     🧪 ЭКСПЕРИМЕНТАЛЬНАЯ ФУНКЦИЯ: БАЛАНС BP ПЕРСОНАЖА (v1, beta)
+     ------------------------------------------------------------
+     Идея: пользователь один раз вписывает текущий баланс BP из игры
+     (например 5000). Дальше, пока идёт "день", любое выполнение или
+     снятие задания сразу прибавляет/вычитает BP из отображаемого
+     баланса — оно равно (введённый базовый баланс) + (значение
+     карточки «Выполнено», #totalDisplay — то же число, что уже
+     считает refreshAll() с учётом VIP/x2). Если случайно снять
+     галочку или сбросить прогресс центральной кнопкой — баланс
+     соразмерно уменьшится, это ожидаемое поведение.
+
+     Кнопка «Новый день» фиксирует сегодняшнюю сумму в базовый
+     баланс и сбрасывает задания — начинается отсчёт заново
+     (после этого сброшенные задания уже не смогут уменьшить то,
+     что было зафиксировано).
+
+     Хранится отдельно на каждого персонажа (ключ 'bp_balance_v1'
+     + суффикс '_char2') и синхронизируется между устройствами
+     через тот же облачный механизм, что и остальной прогресс
+     (см. SYNC_KEYS в первом <script type="module"> файла).
+
+     Это ранняя (экспериментальная) версия функции. Весь код
+     изолирован в этом блоке — чтобы отключить фичу, достаточно
+     удалить этот <script> и виджет #bpBalanceWidget в разметке
+     (.legend-left) вместе с его стилями (секция "ЭКСПЕРИМЕНТАЛЬНАЯ
+     ФУНКЦИЯ: БАЛАНС BP" в <style>). Другой код не пострадает.
+════════════════════════════════════════════════════════════════ -->
+<script>
+(function(){
+  const BP_BALANCE_KEY_PREFIX = 'bp_balance_v1'; // + charSuffix(currentChar)
+
+  function bpKey() {
+    const suffix = (typeof charSuffix === 'function')
+      ? charSuffix(typeof currentChar !== 'undefined' ? currentChar : 1)
+      : '';
+    return BP_BALANCE_KEY_PREFIX + suffix;
+  }
+
+  const BP_BALANCE_MAX = 999999; // ограничение — 6-значный баланс
+
+  function clampBalance(v) {
+    if (v > BP_BALANCE_MAX) return BP_BALANCE_MAX;
+    if (v < -BP_BALANCE_MAX) return -BP_BALANCE_MAX;
+    return v;
+  }
+
+  function getBaseBalance() {
+    const raw = localStorage.getItem(bpKey());
+    const n = parseInt(raw, 10);
+    return isNaN(n) ? 0 : n;
+  }
+
+  function setBaseBalance(v) {
+    localStorage.setItem(bpKey(), String(clampBalance(v)));
+  }
+
+  function getTodayEarned() {
+    // Переиспользуем уже посчитанное значение карточки "Выполнено" —
+    // оно и так учитывает VIP/x2 и обновляется при каждом изменении.
+    const el = document.getElementById('totalDisplay');
+    const n = el ? parseInt(el.textContent, 10) : 0;
+    return isNaN(n) ? 0 : n;
+  }
+
+  const input = document.getElementById('bpBalanceInput');
+
+  function sizeInput() {
+    if (!input) return;
+    input.style.width = Math.max(1, input.value.length) + 'ch';
+  }
+
+  function renderBalance() {
+    if (!input) return;
+    // Не перезаписываем поле, пока пользователь сам в нём печатает
+    if (document.activeElement === input) return;
+    input.value = clampBalance(getBaseBalance() + getTodayEarned());
+    sizeInput();
+  }
+
+  // Ручная правка числа трактуется как коррекция базового баланса:
+  // введённое значение = база + уже накопленное сегодня
+  function handleManualEdit() {
+    if (!input) return;
+    let typed = parseInt(input.value, 10);
+    if (isNaN(typed)) typed = getBaseBalance() + getTodayEarned();
+    typed = clampBalance(typed);
+    setBaseBalance(typed - getTodayEarned());
+    renderBalance();
+  }
+
+  if (input) {
+    input.addEventListener('change', handleManualEdit);
+    input.addEventListener('blur', handleManualEdit);
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); input.blur(); }
+    });
+    // Разрешаем вводить только цифры (и минус, на случай отрицательного баланса),
+    // не больше 6 цифр (999999)
+    input.addEventListener('input', () => {
+      const caret = input.selectionStart;
+      let cleaned = input.value.replace(/[^0-9-]/g, '');
+      // минус допустим только один раз и только в начале
+      cleaned = cleaned.replace(/(?!^)-/g, '');
+      const sign = cleaned.startsWith('-') ? '-' : '';
+      let digits = cleaned.replace(/-/g, '').slice(0, 6);
+      const result = sign + digits;
+      if (result !== input.value) {
+        input.value = result;
+        if (caret !== null) input.setSelectionRange(caret - 1, caret - 1);
+      }
+      sizeInput();
+    });
+    sizeInput();
+  }
+
+  const newDayBtn = document.getElementById('bpNewDayBtn');
+  const newDayPopup = document.getElementById('bpNewDayPopup');
+
+  function positionBpNewDayPopup() {
+    if (!newDayBtn || !newDayPopup) return;
+    const rect = newDayBtn.getBoundingClientRect();
+    const popupW = newDayPopup.offsetWidth || 260;
+    const popupH = newDayPopup.offsetHeight || 100;
+    let left = rect.left + rect.width / 2 - popupW / 2;
+    if (left < 8) left = 8;
+    if (left + popupW > window.innerWidth - 8) left = window.innerWidth - popupW - 8;
+    const top = rect.top - popupH - 12;
+    newDayPopup.style.left = left + 'px';
+    newDayPopup.style.top = top + 'px';
+    const btnCenterX = rect.left + rect.width / 2;
+    const arrowOffset = btnCenterX - left;
+    newDayPopup.style.setProperty('--arrow-offset', arrowOffset + 'px');
+  }
+
+  window.addEventListener('scroll', function() {
+    if (newDayPopup && newDayPopup.classList.contains('show')) positionBpNewDayPopup();
+  }, true);
+  window.addEventListener('resize', function() {
+    if (newDayPopup && newDayPopup.classList.contains('show')) positionBpNewDayPopup();
+  });
+
+  if (newDayBtn && newDayPopup) {
+    newDayBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const willShow = !newDayPopup.classList.contains('show');
+      if (willShow) {
+        window.PopupManager.closeAllExcept('bpNewDayPopup');
+        positionBpNewDayPopup();
+        newDayPopup.classList.add('show');
+      } else {
+        newDayPopup.classList.remove('show');
+      }
+    });
+
+    window.closeBpNewDayPopup = function(e) {
+      if (e) e.stopPropagation();
+      newDayPopup.classList.remove('show');
+    };
+    window.PopupManager.register('bpNewDayPopup', window.closeBpNewDayPopup);
+
+    window.confirmBpNewDay = function(e) {
+      if (e) e.stopPropagation();
+      newDayPopup.classList.remove('show');
+
+      // Фиксируем сегодняшний прогресс в базовый баланс
+      setBaseBalance(getBaseBalance() + getTodayEarned());
+
+      // Сбрасываем задания — так же, как это делает центральная кнопка сброса
+      if (typeof qa === 'function' && typeof saveState === 'function') {
+        qa('.tasks-column input[type="checkbox"]').forEach(cb => { cb.checked = false; });
+        if (typeof onlineHoursCount !== 'undefined') {
+          onlineHoursCount = 0;
+          if (typeof saveOnlineCounter === 'function') saveOnlineCounter();
+          if (typeof updateOnlineCounterUI === 'function') updateOnlineCounterUI();
+        }
+        saveState(); // вызовет refreshAll(), который (см. ниже) обновит и баланс
+      } else {
+        renderBalance();
+      }
+
+      // Небольшая вспышка кнопки как подтверждение действия
+      newDayBtn.style.color = '#fff';
+      newDayBtn.style.borderColor = 'rgba(255,220,80,1)';
+      setTimeout(() => { newDayBtn.style.color = ''; newDayBtn.style.borderColor = ''; }, 700);
+    };
+
+    document.addEventListener('click', function(e) {
+      if (!newDayPopup.classList.contains('show')) return;
+      if (newDayPopup.contains(e.target) || newDayBtn.contains(e.target)) return;
+      newDayPopup.classList.remove('show');
+    });
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') newDayPopup.classList.remove('show');
+    });
+  }
+
+  // Перехватываем refreshAll(), чтобы баланс пересчитывался при любом
+  // изменении: отметке/снятии задания, включении VIP/x2, сбросе
+  // столбца, смене персонажа, скрытии категорий и т.д.
+  if (typeof window.refreshAll === 'function') {
+    const _origRefreshAll = window.refreshAll;
+    window.refreshAll = function() {
+      _origRefreshAll();
+      renderBalance();
+    };
+  }
+
+  // Первичная отрисовка при загрузке страницы
+  renderBalance();
+  window._bpBalanceRender = renderBalance;
 })();
 </script>
 </body>
