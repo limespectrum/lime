@@ -2932,16 +2932,27 @@ body.char2-active .filter-btn.active[data-col="col-fraction"]:hover {
     'daily_tasks_x2_mode_v4_char2',
     'active_char',
     'hidden_columns_v1',
+    'hidden_columns_v1_char2',
     'task_order_v1_col-easy',
     'task_order_v1_col-medium',
     'task_order_v1_col-joint',
     'task_order_v1_col-avoid',
     'task_order_v1_col-fraction',
+    'task_order_v1_col-easy_char2',
+    'task_order_v1_col-medium_char2',
+    'task_order_v1_col-joint_char2',
+    'task_order_v1_col-avoid_char2',
+    'task_order_v1_col-fraction_char2',
     'col_title_v1_col-easy',
     'col_title_v1_col-medium',
     'col_title_v1_col-joint',
     'col_title_v1_col-avoid',
     'col_title_v1_col-fraction',
+    'col_title_v1_col-easy_char2',
+    'col_title_v1_col-medium_char2',
+    'col_title_v1_col-joint_char2',
+    'col_title_v1_col-avoid_char2',
+    'col_title_v1_col-fraction_char2',
     'col_color_v1_col-easy',
     'col_color_v1_col-medium',
     'col_color_v1_col-joint',
@@ -3065,7 +3076,7 @@ body.char2-active .filter-btn.active[data-col="col-fraction"]:hover {
     // 2. Скрытые колонки — структурное изменение, применяем раньше
     // восстановления порядка строк и состояния чекбоксов.
     try {
-      const raw = localStorage.getItem('hidden_columns_v1');
+      const raw = localStorage.getItem(hiddenColumnsKey());
       applyHiddenColumns(raw ? JSON.parse(raw) : []);
     } catch(e) { applyHiddenColumns([]); }
 
@@ -4358,9 +4369,13 @@ function updateGridCols() {
   }
 }
 
+function hiddenColumnsKey() {
+  return 'hidden_columns_v1' + charSuffix(currentChar);
+}
+
 function saveHiddenColumns() {
   const hidden = Array.from(document.querySelectorAll('.grid > .column.hidden')).map(c => c.id);
-  localStorage.setItem('hidden_columns_v1', JSON.stringify(hidden));
+  localStorage.setItem(hiddenColumnsKey(), JSON.stringify(hidden));
 }
 
 function applyHiddenColumns(hiddenIds) {
@@ -4384,9 +4399,9 @@ function applyHiddenColumns(hiddenIds) {
 
 function loadHiddenColumns() {
   try {
-    const raw = localStorage.getItem('hidden_columns_v1');
-    if (raw) applyHiddenColumns(JSON.parse(raw));
-  } catch(e) {}
+    const raw = localStorage.getItem(hiddenColumnsKey());
+    applyHiddenColumns(raw ? JSON.parse(raw) : []);
+  } catch(e) { applyHiddenColumns([]); }
 }
 
 document.querySelectorAll('.filter-btn').forEach(btn => {
@@ -4465,6 +4480,10 @@ loadHiddenColumns();
   const TITLE_KEY_PREFIX = 'col_title_v1_';
   const colTitles = Array.from(document.querySelectorAll('.col-title'));
 
+  function titleKey(colId) {
+    return TITLE_KEY_PREFIX + colId + charSuffix(currentChar);
+  }
+
   function getTitleEl(h2) {
     // Text lives in .col-title-text span (or h2 itself if no span)
     return h2.querySelector('.col-title-text') || h2;
@@ -4475,7 +4494,7 @@ loadHiddenColumns();
       const col = h2.closest('.column');
       const colId = col ? col.id : '';
       if (!colId) return;
-      const saved = localStorage.getItem(TITLE_KEY_PREFIX + colId);
+      const saved = localStorage.getItem(titleKey(colId));
       const el = getTitleEl(h2);
       el.textContent = saved || h2.dataset.default;
       syncFilterBtnLabel(colId, el.textContent);
@@ -4498,9 +4517,9 @@ loadHiddenColumns();
     const text = el.textContent.trim() || h2.dataset.default;
     el.textContent = text;
     if (text === h2.dataset.default) {
-      localStorage.removeItem(TITLE_KEY_PREFIX + colId);
+      localStorage.removeItem(titleKey(colId));
     } else {
-      localStorage.setItem(TITLE_KEY_PREFIX + colId, text);
+      localStorage.setItem(titleKey(colId), text);
     }
     syncFilterBtnLabel(colId, text);
   }
@@ -4509,7 +4528,7 @@ loadHiddenColumns();
     colTitles.forEach(h2 => {
       const col = h2.closest('.column');
       const colId = col ? col.id : '';
-      if (colId) localStorage.removeItem(TITLE_KEY_PREFIX + colId);
+      if (colId) localStorage.removeItem(titleKey(colId));
       const el = getTitleEl(h2);
       el.textContent = h2.dataset.default;
       syncFilterBtnLabel(colId, el.textContent);
@@ -4531,18 +4550,23 @@ loadHiddenColumns();
 
   applySavedTitles();
 
-  // Единый ключ порядка для обоих персонажей
+  // Отдельный ключ порядка для каждого персонажа
   function orderKey(colId) {
-    return ORDER_KEY_PREFIX + colId;
+    return ORDER_KEY_PREFIX + colId + charSuffix(currentChar);
   }
 
-  // Применяем сохранённый порядок — строки ищем по всему документу
+  // Применяем сохранённый порядок — строки ищем по всему документу.
+  // Если для текущего персонажа сохранённого порядка нет — возвращаем
+  // столбец к дефолтному порядку (иначе останется расстановка,
+  // унаследованная от другого персонажа).
   function applySavedOrder(tbody, colId) {
     const saved = localStorage.getItem(orderKey(colId));
-    if (!saved) return;
-    let order;
-    try { order = JSON.parse(saved); } catch(e) { return; }
     const globalMap = buildGlobalRowMap();
+    let order = null;
+    if (saved) {
+      try { order = JSON.parse(saved); } catch(e) { order = null; }
+    }
+    if (!order) order = defaultOrders[colId] || [];
     order.forEach(key => {
       const tr = globalMap[key];
       if (tr) tbody.appendChild(tr);
@@ -4575,7 +4599,7 @@ loadHiddenColumns();
   // Сбрасываем порядок к дефолтному:
   // ищем каждую строку по всему DOM и возвращаем в её родной tbody
   function resetAllOrders() {
-    // Удаляем сохранённые порядки из localStorage
+    // Удаляем сохранённый порядок только у ТЕКУЩЕГО персонажа
     tbodies.forEach(tbody => {
       const col = tbody.closest('.column');
       const colId = col ? col.id : (tbody.id || 'fraction');
@@ -4814,12 +4838,14 @@ loadHiddenColumns();
   window._applyAllSavedOrders = applyAllSavedOrders;
   window._applySavedTitles = applySavedTitles;
 
-  // Обновляем порядок при смене персонажа
+  // Обновляем порядок, скрытые столбцы и названия при смене персонажа
   const _origSwitchChar = window.switchChar;
   window.switchChar = function(n) {
     if (isEditMode) exitEditMode(false);
     _origSwitchChar(n);
     applyAllSavedOrders();
+    loadHiddenColumns();
+    applySavedTitles();
   };
 
   // Пробрасываем функции для модалки подтверждения
@@ -4827,8 +4853,8 @@ loadHiddenColumns();
     if (isEditMode) exitEditMode(false);
     resetAllOrders();
     resetAllTitles();
+    localStorage.removeItem(hiddenColumnsKey());
     applyHiddenColumns([]);
-    saveHiddenColumns();
     updateGridCols();
     if (typeof window._resetAllColors === 'function') window._resetAllColors();
   };
@@ -5306,7 +5332,7 @@ body.char2-active .oum-footer-hint {
     <div style="font-size:1.4rem; font-weight:900; letter-spacing:5px; text-transform:uppercase; background:linear-gradient(135deg,#00eeff,#cc44ff,#ffdd00); -webkit-background-clip:text; background-clip:text; color:transparent; filter:drop-shadow(0 0 10px rgba(0,220,255,0.5)); font-family: system-ui, -apple-system, Roboto, Arial, sans-serif;">⚙ НАСТРОЙКИ ⚙</div>
     <div style="font-size:0.68rem; font-weight:700; letter-spacing:6px; text-transform:uppercase; color:rgba(150,210,255,0.45); margin-top:-8px; font-family: system-ui, -apple-system, Roboto, Arial, sans-serif;">СБРОС ПО УМОЛЧАНИЮ</div>
     <div style="width:100%; height:1px; background:linear-gradient(90deg,transparent,rgba(0,255,255,0.2),transparent); margin:4px 0;"></div>
-    <div style="font-size:0.82rem; font-weight:500; line-height:1.7; color:rgba(150,210,255,0.6); font-family: system-ui, -apple-system, Roboto, Arial, sans-serif; letter-spacing:0.5px;">Порядок заданий, переименованные категории и цвета вернутся к базовым настройкам <span style="color:rgba(255,215,80,0.9); font-weight:700; text-shadow:0 0 8px rgba(255,200,0,0.5);">на двух персонажах одновременно</span>. Выполненные задания не будут затронуты.</div>
+    <div style="font-size:0.82rem; font-weight:500; line-height:1.7; color:rgba(150,210,255,0.6); font-family: system-ui, -apple-system, Roboto, Arial, sans-serif; letter-spacing:0.5px;">Порядок заданий, переименованные категории и цвета вернутся к базовым настройкам <span style="color:rgba(255,215,80,0.9); font-weight:700; text-shadow:0 0 8px rgba(255,200,0,0.5);">только у текущего персонажа (<span id="resetConfirmCharLabel">1</span>)</span>. Другого персонажа и выполненные задания это не затронет.</div>
     <div style="display:flex; gap:12px; justify-content:center; width:100%; margin-top:8px;">
       <button id="resetConfirmApply" style="
         flex:1;
@@ -5351,6 +5377,8 @@ body.char2-active .oum-footer-hint {
 <script>
 function showResetConfirm() {
   const overlay = document.getElementById('resetConfirmOverlay');
+  const label = document.getElementById('resetConfirmCharLabel');
+  if (label && typeof currentChar !== 'undefined') label.textContent = currentChar;
   overlay.style.display = 'flex';
 }
 function hideResetConfirm() {
@@ -5591,15 +5619,15 @@ document.getElementById('resetConfirmApply').addEventListener('click', () => {
   window._colorPickerRefreshDots = refreshDots;
   window._resetAllColors = function() {
     const cols = ['col-easy','col-medium','col-joint','col-avoid','col-fraction'];
-    // Сбрасываем для обоих персонажей
+    // Сбрасываем только для ТЕКУЩЕГО персонажа
     cols.forEach(colId => {
-      localStorage.removeItem(COLOR_KEY_PREFIX + colId);
-      localStorage.removeItem(COLOR_KEY_PREFIX + colId + '_char2');
+      localStorage.removeItem(colorKey(colId));
       // Убираем инжектированные стили
       const old = document.getElementById('col-custom-style-' + colId);
       if (old) old.remove();
     });
-    // Сбрасываем подсветку заданий
+    refreshDots();
+    // Сбрасываем подсветку заданий (тоже только у текущего персонажа)
     if (typeof window._resetTaskHighlightColor === 'function') {
       window._resetTaskHighlightColor();
     }
@@ -5680,10 +5708,10 @@ document.getElementById('resetConfirmApply').addEventListener('click', () => {
     applyColor(color);
   };
 
-  // Сброс — вызывается кнопкой "По умолчанию" через resetAllColors
+  // Сброс — вызывается кнопкой "По умолчанию" через resetAllColors.
+  // Сбрасывает только у ТЕКУЩЕГО персонажа.
   window._resetTaskHighlightColor = function() {
-    localStorage.removeItem(HL_KEY_PREFIX + 'char1');
-    localStorage.removeItem(HL_KEY_PREFIX + 'char2');
+    localStorage.removeItem(getCharKey());
     applyColor('green');
   };
 
