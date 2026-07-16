@@ -18,8 +18,8 @@
     -moz-user-select: text;
   }
   * { cursor: default; }
-  a, button, [onclick], label, .toggle-switch, .toggle-btn, .char-btn, .cosmos-btn, .online-monitor-btn, .filter-btn, .legend-filter, .profile-settings-btn, #profileBtn, #logoutBtn, .pmenu-btn, .back-btn, #pinnedServer { cursor: pointer; }
-  a *, button *, [onclick] *, label *, .toggle-switch *, .toggle-btn *, .char-btn *, .cosmos-btn *, .online-monitor-btn *, .filter-btn *, .legend-filter *, .profile-settings-btn *, #profileBtn *, #logoutBtn *, .pmenu-btn *, .back-btn *, #pinnedServer * { cursor: pointer; }
+  a, button, [onclick], label, .toggle-switch, .toggle-btn, .char-btn, .cosmos-btn, .online-monitor-btn, .filter-btn, .legend-filter, .profile-settings-btn, #profileBtn, #logoutBtn, .pmenu-btn, .back-btn, .pinned-server-widget { cursor: pointer; }
+  a *, button *, [onclick] *, label *, .toggle-switch *, .toggle-btn *, .char-btn *, .cosmos-btn *, .online-monitor-btn *, .filter-btn *, .legend-filter *, .profile-settings-btn *, #profileBtn *, #logoutBtn *, .pmenu-btn *, .back-btn *, .pinned-server-widget * { cursor: pointer; }
   input, textarea { cursor: text; }
   :root{
     --easy-bg: #e9f7ef;
@@ -45,11 +45,30 @@
   .title-capsule {
     text-align: center;
     margin: 0;
+    position: relative;
   }
   .title-capsule-inner {
     display: block;
     position: relative;
     padding: 18px 52px 10px;
+  }
+  /* Блок закреплённых серверов, прижатый к верхнему правому углу
+     всего .panel-group — логотип при этом остаётся строго по
+     центру строки, т.к. блок выведен из потока (position:absolute). */
+  .title-capsule-pinned {
+    position: absolute;
+    bottom: 2px;
+    right: 22px;
+    z-index: 3;
+  }
+  @media (max-width: 900px) {
+    .title-capsule-pinned {
+      position: static;
+      transform: none;
+      display: flex;
+      justify-content: center;
+      margin-top: 10px;
+    }
   }
   .title-main {
     font-size: 2rem;
@@ -78,14 +97,46 @@
     cursor: default;
   }
   .controls { display:flex; gap:12px; align-items:center; flex-wrap:wrap; padding: 14px 24px; }
-  .controls button:not(.char-btn):not(.cosmos-btn) { background: linear-gradient(135deg, #ff3366, #cc0044); border: none; color: white; padding: 10px 24px; border-radius: 40px; font-weight: bold; cursor: pointer; transition: 0.2s; box-shadow: 0 0 6px #ff3366; user-select: none; }
-  .controls button:not(.char-btn):not(.cosmos-btn):hover { box-shadow: 0 0 18px #ff3366; background: linear-gradient(135deg, #ff5577, #ee2255); }
+  .controls button:not(.char-btn):not(.cosmos-btn):not(.bp-newday-btn):not(.bp-customize-btn):not(.bp-reset-btn) { background: linear-gradient(135deg, #ff3366, #cc0044); border: none; color: white; padding: 10px 24px; border-radius: 40px; font-weight: bold; cursor: pointer; transition: 0.2s; box-shadow: 0 0 6px #ff3366; user-select: none; }
+  .controls button:not(.char-btn):not(.cosmos-btn):not(.bp-newday-btn):not(.bp-customize-btn):not(.bp-reset-btn):hover { box-shadow: 0 0 18px #ff3366; background: linear-gradient(135deg, #ff5577, #ee2255); }
   .center-actions {
     display: grid;
     grid-template-columns: 1fr auto 1fr;
     align-items: center;
     gap: 20px;
     width: 100%;
+  }
+  .center-actions .header-logo {
+    grid-column: 1;
+    justify-self: start;
+    display: flex;
+    align-items: center;
+  }
+  .bp-balance-anchor .bp-balance-widget {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translate(-50%, -18%);
+    z-index: 6;
+  }
+  .center-actions .right-group {
+    grid-column: 3;
+    justify-self: end;
+  }
+  .center-actions .header-logo .title-capsule-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0;
+  }
+  .center-actions .header-logo .title-main {
+    font-size: 1.2rem;
+    letter-spacing: 1.5px;
+  }
+  .center-actions .header-logo .title-sub {
+    font-size: 0.62rem;
+    letter-spacing: 3px;
+    margin-top: 2px;
   }
   .left-group {
     display: flex;
@@ -99,11 +150,15 @@
   }
   @media (max-width: 1300px) {
     .center-actions {
-      grid-template-columns: 1fr;
-    }
-    .left-group, .right-group, .date-display {
-      justify-self: center;
+      display: flex;
+      flex-direction: column;
       justify-content: center;
+      align-items: center;
+    }
+    .center-actions .header-logo,
+    .center-actions .bp-balance-widget,
+    .center-actions .right-group {
+      justify-self: center;
     }
   }
 
@@ -185,30 +240,30 @@
 
   /* VIP потухшая */
   body.char2-active .toggle-btn-vip {
-    background: linear-gradient(135deg, rgba(57,255,100,0.10), rgba(0,180,60,0.08));
-    border: 1.5px solid rgba(57,255,100,0.35);
+    background: linear-gradient(135deg, rgba(42,196,148,0.10), rgba(22,152,120,0.08));
+    border: 1.5px solid rgba(42,196,148,0.35);
     color: rgba(140,255,180,0.8);
-    box-shadow: 0 0 8px rgba(57,255,100,0.10);
+    box-shadow: 0 0 8px rgba(42,196,148,0.10);
     text-shadow: none;
   }
   body.char2-active .toggle-btn-vip:hover {
-    border-color: rgba(57,255,100,0.65);
+    border-color: rgba(42,196,148,0.65);
     color: #aaffc8;
-    box-shadow: 0 0 18px rgba(57,255,100,0.35);
+    box-shadow: 0 0 18px rgba(42,196,148,0.35);
   }
 
   /* X2 потухшая */
   body.char2-active .toggle-btn-x2 {
-    background: linear-gradient(135deg, rgba(57,255,100,0.10), rgba(0,180,60,0.08));
-    border: 1.5px solid rgba(57,255,100,0.35);
+    background: linear-gradient(135deg, rgba(42,196,148,0.10), rgba(22,152,120,0.08));
+    border: 1.5px solid rgba(42,196,148,0.35);
     color: rgba(140,255,180,0.8);
-    box-shadow: 0 0 8px rgba(57,255,100,0.10);
+    box-shadow: 0 0 8px rgba(42,196,148,0.10);
     text-shadow: none;
   }
   body.char2-active .toggle-btn-x2:hover {
-    border-color: rgba(57,255,100,0.65);
+    border-color: rgba(42,196,148,0.65);
     color: #aaffc8;
-    box-shadow: 0 0 18px rgba(57,255,100,0.35);
+    box-shadow: 0 0 18px rgba(42,196,148,0.35);
   }
 
   .date-display {
@@ -254,16 +309,16 @@
     margin-top: 1px;
   }
   body.char2-active .date-display .date-day {
-    color: rgba(57, 255, 100, 0.45);
+    color: rgba(42,196,148, 0.45);
   }
   body.char2-active .date-display .date-main {
     background: linear-gradient(135deg, #afffcc, #39ff6a, #00ffaa);
     -webkit-background-clip: text;
     background-clip: text;
-    filter: drop-shadow(0 0 8px rgba(57, 255, 100, 0.7));
+    filter: drop-shadow(0 0 8px rgba(42,196,148, 0.7));
   }
   body.char2-active .date-display .date-time {
-    color: rgba(57, 255, 100, 0.38);
+    color: rgba(42,196,148, 0.38);
   }
   .legend { display:grid; grid-template-columns: 1fr auto 1fr; gap:10px; align-items:center; padding: 14px 24px; cursor: default; user-select: none; }
   .legend-left { grid-column: 1; justify-self: start; display:flex; gap:10px; flex-wrap:wrap; align-items:center; cursor: default; user-select: none; }
@@ -272,7 +327,7 @@
 
   /* === ЕДИНАЯ ПАНЕЛЬ: controls + char-indicator + legend === */
   .super-panel {
-    margin-bottom: 8px;
+    margin-bottom: 0;
     border-radius: 0;
     border: none;
     box-shadow: none;
@@ -290,22 +345,29 @@
     animation: none;
   }
   .panel-group {
-    background: rgba(10,20,40,0.75);
+    background:
+      radial-gradient(ellipse 60% 90% at 12% 0%, rgba(0,210,255,0.08) 0%, transparent 65%),
+      radial-gradient(ellipse 60% 90% at 88% 0%, rgba(255,80,160,0.06) 0%, transparent 65%),
+      rgba(12,22,44,0.78);
     backdrop-filter: blur(12px);
-    border: 1px solid rgba(0,255,255,0.4);
-    border-radius: 16px;
-    box-shadow: 0 0 15px rgba(0,255,255,0.2);
+    border: 1.5px solid rgba(0,220,255,0.55);
+    border-bottom: none;
+    border-radius: 16px 16px 0 0;
+    box-shadow:
+      0 0 20px rgba(0,220,255,0.26),
+      0 0 36px rgba(180,80,255,0.10);
     margin-bottom: 0;
     overflow: clip;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease, background 0.4s ease;
     cursor: default;
     user-select: none;
   }
   .title-capsule {
     text-align: center;
     margin: 0;
-    padding: 14px 0 0 0;
+    padding: 6px 0 0 0;
     background: transparent;
+    position: relative;
   }
   .title-capsule-inner {
     display: inline-block;
@@ -334,38 +396,30 @@
     user-select: none;
   }
   body.char2-active .panel-seam {
-    background: linear-gradient(90deg, transparent, rgba(57,255,100,0.35) 18%, rgba(57,255,100,0.35) 82%, transparent);
+    background: linear-gradient(90deg, transparent, rgba(42,196,148,0.35) 18%, rgba(42,196,148,0.35) 82%, transparent);
   }
-  /* Коннектор между панелью и блоком ВЫПОЛНЕНО/ОСТАЛОСЬ */
+  /* Коннектор между панелью и блоком ВЫПОЛНЕНО/ОСТАЛОСЬ —
+     тонкая цветная перемычка без зазора, продолжающая радужную
+     обводку блока ВЫПОЛНЕНО/ОСТАЛОСЬ прямо от верхней панели */
   .panel-connector {
     position: relative;
-    height: 18px;
+    height: 3px;
     margin: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    background: linear-gradient(90deg, rgba(0,210,255,0.85) 0%, rgba(180,80,255,0.7) 50%, rgba(255,80,160,0.85) 100%);
+    box-shadow: 0 0 10px rgba(180,80,255,0.35), 0 0 16px rgba(0,210,255,0.25);
+    transition: background 0.4s ease, box-shadow 0.4s ease;
     cursor: default;
     user-select: none;
   }
   .panel-connector::before {
-    content: '';
-    position: absolute;
-    left: 10%;
-    right: 10%;
-    top: 50%;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(0,220,255,0.3), rgba(0,220,255,0.3), transparent);
-    transition: background 0.3s ease;
+    display: none;
   }
   .connector-node {
     display: none;
   }
-  body.char2-active .panel-connector::before {
-    background: linear-gradient(90deg, transparent, rgba(57,255,100,0.3), rgba(57,255,100,0.3), transparent);
-  }
-  body.char2-active .connector-node {
-    background: radial-gradient(circle, #ccffdd, #39ff6a);
-    box-shadow: 0 0 8px rgba(57,255,100,0.8), 0 0 18px rgba(57,255,100,0.35);
+  body.char2-active .panel-connector {
+    background: linear-gradient(90deg, rgba(42,196,148,0.85) 0%, rgba(0,210,200,0.6) 50%, rgba(0,180,170,0.85) 100%);
+    box-shadow: 0 0 10px rgba(0,210,200,0.35), 0 0 16px rgba(42,196,148,0.25);
   }
 
   .filter-btn {
@@ -418,10 +472,6 @@
   @keyframes editBtnPulse {
     0%  { box-shadow: 0 0 8px rgba(0,200,255,0.3); }
     100%{ box-shadow: 0 0 18px rgba(0,200,255,0.6); }
-  }
-  @keyframes editPulse {
-    0%  { box-shadow: 0 0 10px rgba(255,40,80,0.18), 0 0 0 1px rgba(255,60,100,0.10) inset; border-color: rgba(255,60,100,0.28); }
-    100%{ box-shadow: 0 0 28px rgba(255,40,80,0.42), 0 0 0 1px rgba(255,80,120,0.18) inset; border-color: rgba(255,80,120,0.60); }
   }
 
   /* Draggable rows in edit mode */
@@ -553,22 +603,22 @@
     width: 100%;
     box-sizing: border-box;
     text-align: center;
-    padding: 11px 28px;
-    margin-top: 12px;
+    padding: 12px 24px;
+    margin-top: 8px;
     margin-bottom: 10px;
-    border-radius: 6px;
-    background: rgba(8, 16, 28, 0.82);
-    border: 1px solid rgba(255, 60, 100, 0.38);
+    border-radius: 10px;
+    background: rgba(10,20,40,0.75);
+    border: 1.5px solid rgba(255,110,110,0.45);
+    border-left: 4px solid rgba(255,130,130,0.85);
     box-shadow:
-      0 0 18px rgba(255, 40, 80, 0.18),
-      0 0 0 1px rgba(255, 60, 100, 0.10) inset;
+      0 0 16px rgba(255,90,90,0.16),
+      0 0 0 1px rgba(255,110,110,0.08) inset;
     font-family: monospace;
     font-size: 0.78rem;
     font-weight: 700;
     letter-spacing: 3px;
     text-transform: uppercase;
-    color: rgba(255, 100, 130, 0.9);
-    animation: editPulse 1.4s ease-in-out infinite alternate;
+    color: rgba(255,190,190,0.9);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     user-select: none;
@@ -605,19 +655,10 @@
     transition: max-height 0.35s cubic-bezier(0.4,0,0.2,1),
                 opacity 0.3s ease;
   }
-  body.edit-order-mode .total {
-    max-height: 0 !important;
-    opacity: 0 !important;
-    margin-bottom: 0 !important;
-    pointer-events: none;
-  }
-  body.edit-order-mode .panel-connector {
-    max-height: 0 !important;
-    opacity: 0 !important;
-  }
+  /* ВЫПОЛНЕНО/ОСТАЛОСЬ и коннектор больше не скрываются в режиме редактирования — остаются на месте */
 
-  /* Затемнение всех блоков кроме столбиков с заданиями и логотипа в режиме редактирования */
-  body.edit-order-mode .controls,
+  /* Затемнение блока аккаунта (кроме логотипа и панели баланса) в режиме редактирования */
+  body.edit-order-mode .controls .right-group,
   body.edit-order-mode .char-switcher {
     opacity: 0.35;
     filter: grayscale(0.8);
@@ -627,8 +668,7 @@
   body.edit-order-mode .controls .left-group #editOrderBtn,
   body.edit-order-mode .controls .left-group .reset-order-btn,
   body.edit-order-mode #editOrderBtn,
-  body.edit-order-mode #resetOrderBtn,
-  body.edit-order-mode .legend .filter-btn {
+  body.edit-order-mode #resetOrderBtn {
     opacity: 1;
     filter: none;
     pointer-events: auto;
@@ -665,8 +705,8 @@
     box-shadow: 0 0 6px rgba(0,220,255,0.7);
   }
   #charFill2 {
-    background: linear-gradient(90deg, rgba(57,255,100,0.9), rgba(0,200,80,0.7));
-    box-shadow: 0 0 6px rgba(57,255,100,0.7);
+    background: linear-gradient(90deg, rgba(42,196,148,0.9), rgba(36,182,140,0.7));
+    box-shadow: 0 0 6px rgba(42,196,148,0.7);
   }
   #charBtn1.active ~ .char-progress-bar .char-progress-fill,
   #charBtn2.active ~ .char-progress-bar .char-progress-fill {
@@ -782,19 +822,19 @@
   }
   /* Char 2 active — green pill */
   body.char2-active .char-toggle-pill {
-    border-color: rgba(57,255,100,0.75);
-    background: linear-gradient(135deg, rgba(57,255,100,0.18), rgba(0,200,60,0.14));
-    box-shadow: 0 0 7px rgba(57,255,100,0.3), 0 0 14px rgba(0,255,80,0.14), inset 0 0 5px rgba(57,255,100,0.07);
+    border-color: rgba(42,196,148,0.75);
+    background: linear-gradient(135deg, rgba(42,196,148,0.18), rgba(30,172,130,0.14));
+    box-shadow: 0 0 7px rgba(42,196,148,0.3), 0 0 14px rgba(54,214,160,0.14), inset 0 0 5px rgba(42,196,148,0.07);
     animation: greenCharPulse 2.2s ease-in-out infinite alternate;
   }
   body.char2-active .ctp-label {
     color: #39ff6a;
   }
   body.char2-active .ctp-circle {
-    background: rgba(57,255,100,0.22);
-    border-color: rgba(57,255,100,0.6);
+    background: rgba(42,196,148,0.22);
+    border-color: rgba(42,196,148,0.6);
     color: #39ff6a;
-    box-shadow: 0 0 5px rgba(57,255,100,0.22);
+    box-shadow: 0 0 5px rgba(42,196,148,0.22);
   }
 
   .char-btn.active {
@@ -811,29 +851,33 @@
 
   /* Персонаж 2 — зелёная токсичная подсветка */
   body.char2-active .char-btn#charBtn1.collapsed {
-    border-color: rgba(57,255,100,0.2);
-    color: rgba(57,255,100,0.5);
+    border-color: rgba(42,196,148,0.2);
+    color: rgba(42,196,148,0.5);
     background: rgba(20,40,25,0.4);
   }
   body.char2-active .char-btn#charBtn1.collapsed:hover {
-    border-color: rgba(57,255,100,0.5);
-    color: rgba(57,255,100,0.85);
+    border-color: rgba(42,196,148,0.5);
+    color: rgba(42,196,148,0.85);
     background: rgba(30,55,35,0.6);
   }
   body.char2-active .char-btn#charBtn2.active {
-    background: linear-gradient(135deg, rgba(57,255,100,0.18), rgba(0,200,60,0.14));
-    border-color: rgba(57,255,100,0.75);
+    background: linear-gradient(135deg, rgba(42,196,148,0.18), rgba(30,172,130,0.14));
+    border-color: rgba(42,196,148,0.75);
     color: #39ff6a;
-    box-shadow: 0 0 7px rgba(57,255,100,0.3), 0 0 14px rgba(0,255,80,0.14), inset 0 0 5px rgba(57,255,100,0.07);
+    box-shadow: 0 0 7px rgba(42,196,148,0.3), 0 0 14px rgba(54,214,160,0.14), inset 0 0 5px rgba(42,196,148,0.07);
     animation: greenCharPulse 2.2s ease-in-out infinite alternate;
   }
   @keyframes greenCharPulse {
-    0%  { box-shadow: 0 0 6px rgba(57,255,100,0.22), 0 0 12px rgba(0,255,80,0.1), inset 0 0 4px rgba(57,255,100,0.05); }
-    100%{ box-shadow: 0 0 14px rgba(57,255,100,0.42), 0 0 24px rgba(0,255,80,0.2), inset 0 0 7px rgba(57,255,100,0.09); }
+    0%  { box-shadow: 0 0 6px rgba(42,196,148,0.22), 0 0 12px rgba(54,214,160,0.1), inset 0 0 4px rgba(42,196,148,0.05); }
+    100%{ box-shadow: 0 0 14px rgba(42,196,148,0.42), 0 0 24px rgba(54,214,160,0.2), inset 0 0 7px rgba(42,196,148,0.09); }
   }
   body.char2-active .panel-group {
-    border-color: rgba(57,255,100,0.45);
-    box-shadow: 0 0 18px rgba(57,255,100,0.2), 0 0 40px rgba(0,255,80,0.08);
+    border-color: rgba(42,196,148,0.55);
+    box-shadow: 0 0 22px rgba(42,196,148,0.26), 0 0 38px rgba(0,210,200,0.10);
+    background:
+      radial-gradient(ellipse 60% 90% at 12% 0%, rgba(42,196,148,0.07) 0%, transparent 65%),
+      radial-gradient(ellipse 60% 90% at 88% 0%, rgba(0,210,200,0.06) 0%, transparent 65%),
+      rgba(12,22,44,0.78);
   }
   body.char2-active #editOrderBtn {
     background: rgba(255,255,255,0.04) !important;
@@ -846,20 +890,32 @@
     border-color: rgba(255,255,255,0.55) !important;
     color: rgba(240,245,255,0.92) !important;
   }
+  /* Персонаж 2 в режиме редактирования: кнопка «Сохранить» подсвечивается так же, как у персонажа 1 */
+  body.char2-active.edit-order-mode #editOrderBtn {
+    background: rgba(0,200,255,0.12) !important;
+    border-color: rgba(0,200,255,0.5) !important;
+    color: rgba(120,230,255,0.9) !important;
+    box-shadow: 0 0 14px rgba(0,200,255,0.7), inset 0 0 0 1.5px rgba(0,200,255,0.8) !important;
+  }
+  body.char2-active.edit-order-mode #editOrderBtn:hover {
+    box-shadow: 0 0 14px rgba(0,200,255,0.5) !important;
+    border-color: rgba(0,220,255,0.8) !important;
+    color: #aaf0ff !important;
+  }
   /* Зелёная токсичная шапка для персонажа 2 — через super-panel */
   body.char2-active .title-main {
     background: linear-gradient(135deg, #39ff6a 0%, #00ff88 35%, #00eedd 65%, #00d8c8 100%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
-    filter: drop-shadow(0 0 8px rgba(57,255,100,0.4));
+    filter: drop-shadow(0 0 8px rgba(42,196,148,0.4));
   }
   body.char2-active .title-sub {
     color: rgba(0,220,210,0.6);
   }
   @keyframes greenToxicPulse {
-    0%   { box-shadow: 0 0 15px rgba(57,255,100,0.18), 0 0 35px rgba(0,255,80,0.08); }
-    100% { box-shadow: 0 0 28px rgba(57,255,100,0.38), 0 0 60px rgba(0,255,80,0.18); }
+    0%   { box-shadow: 0 0 15px rgba(42,196,148,0.18), 0 0 35px rgba(54,214,160,0.08); }
+    100% { box-shadow: 0 0 28px rgba(42,196,148,0.38), 0 0 60px rgba(54,214,160,0.18); }
   }
 
   .column.hidden {
@@ -998,10 +1054,10 @@
      ЕДИНАЯ SPLIT-ПАНЕЛЬ: ВЫПОЛНЕНО / ОСТАЛОСЬ
      ══════════════════════════════════════════ */
   .total {
-    margin: 0 6px 14px 6px;
+    margin: 0 0 14px 0;
     position: relative;
-    border-radius: 17px;
-    padding: 1.5px;
+    border-radius: 0 0 17px 17px;
+    padding: 0 1.5px 1.5px 1.5px;
     background: linear-gradient(90deg, rgba(0,210,255,0.85) 0%, rgba(180,80,255,0.7) 50%, rgba(255,80,160,0.85) 100%);
     box-shadow:
       -4px 0 14px rgba(0,210,255,0.3),
@@ -1016,7 +1072,7 @@
     position: relative;
     display: flex;
     align-items: stretch;
-    border-radius: 16px;
+    border-radius: 0 0 16px 16px;
     overflow: clip;
     background: rgba(6, 14, 28, 0.88);
     box-shadow:
@@ -1025,28 +1081,68 @@
   }
   .total-split::after { display: none; }
 
+  /* Свободная левая зона — зарезервирована под будущий функционал.
+     Сейчас пустая, забирает на себя всё оставшееся пространство,
+     а компактная группа "Выполнено / Осталось" прижата вправо. */
+  .total-future-slot {
+    flex: 1 1 auto;
+    min-width: 0;
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    padding: 13px 22px;
+  }
+  .total-right-group {
+    display: flex;
+    align-items: stretch;
+    flex: 0 0 auto;
+    position: relative;
+    z-index: 1;
+  }
+  .total-split > .date-display {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+  }
+  @media (max-width:700px) {
+    .total-split > .date-display {
+      position: static;
+      transform: none;
+      justify-content: center;
+      margin: 4px auto;
+    }
+  }
+  @media (max-width:700px){
+    .total-future-slot { justify-content: center; }
+    .total-split { justify-content: center; }
+  }
+
   /* Фоновый градиент всей панели: левая циан, правая розовая */
   .total-split::before {
     content: '';
     position: absolute;
     inset: 0;
-    background:
-      radial-gradient(ellipse 55% 100% at 15% 0%, rgba(0,210,255,0.10) 0%, transparent 70%),
-      radial-gradient(ellipse 55% 100% at 85% 0%, rgba(255,80,160,0.10) 0%, transparent 70%);
+    background: none;
     pointer-events: none;
     z-index: 0;
     transition: background 0.4s ease;
   }
 
-  /* Карточки — половинки */
+  /* Карточки — компактные, ширина по содержимому (растяжение убрано,
+     т.к. теперь они прижаты вправо, а не делят панель пополам) */
   .total-card {
-    flex: 1;
+    flex: 0 0 auto;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 5px;
-    padding: 20px 28px;
+    gap: 6px;
+    padding: 13px 26px;
     position: relative;
     z-index: 1;
     user-select: none;
@@ -1080,22 +1176,25 @@
   }
 
   .card-label {
-    font-size: 1.08rem;
+    font-size: 0.92rem;
     font-weight: 800;
-    letter-spacing: 4px;
+    letter-spacing: 3px;
     text-transform: uppercase;
     user-select: none;
     cursor: default;
     font-family: monospace;
+    white-space: nowrap;
+    text-align: center;
+    width: 100%;
   }
   .card-value-row {
     display: flex;
-    align-items: center;
+    align-items: baseline;
     gap: 10px;
     line-height: 1;
   }
   .card-value {
-    font-size: 3.6rem;
+    font-size: 2.7rem;
     font-weight: 900;
     letter-spacing: 1px;
     line-height: 1;
@@ -1104,20 +1203,21 @@
   }
   .card-bp {
     display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-self: stretch;
-    font-size: 1.05rem;
+    flex-direction: row;
+    align-items: baseline;
+    gap: 5px;
+    font-size: 1rem;
     font-weight: 900;
     letter-spacing: 1.5px;
-    line-height: 1.25;
+    line-height: 1;
     font-family: monospace;
     text-align: left;
-    opacity: 0.85;
+    opacity: 0.75;
+    white-space: nowrap;
     user-select: none;
     cursor: default;
   }
-  .card-bp-line { display: block; }
+  .card-bp-line { display: inline; }
   .card-max-row {
     font-size: 0.78rem;
     font-weight: 800;
@@ -1130,7 +1230,7 @@
     cursor: default;
   }
   /* Персонаж 1: цвета левой (ВЫПОЛНЕНО) */
-  .total-card.card-done .card-label { color: rgba(100, 220, 255, 0.65); }
+  .total-card.card-done .card-label,
   .total-card.card-done .card-value,
   .total-card.card-done .card-bp {
     background: linear-gradient(135deg, #a8f0ff, #00d2ff, #0099cc);
@@ -1138,12 +1238,16 @@
     filter: drop-shadow(0 0 8px rgba(0,210,255,0.6));
   }
   /* Персонаж 1: цвета правой (ОСТАЛОСЬ) */
-  .total-card.card-left .card-label { color: rgba(255, 150, 200, 0.65); }
+  .total-card.card-left .card-label,
   .total-card.card-left .card-value,
   .total-card.card-left .card-bp {
     background: linear-gradient(135deg, #ffb3d9, #ff50a0, #cc2266);
     -webkit-background-clip: text; background-clip: text; color: transparent;
     filter: drop-shadow(0 0 8px rgba(255,80,160,0.6));
+  }
+  .total-card.card-left {
+    justify-content: flex-start;
+    padding-top: 13px;
   }
   .total-card.card-left .card-max-row { color: rgba(255, 150, 200, 0.65); }
 
@@ -1157,21 +1261,20 @@
     .total-divider::before { top: 50%; left: 50%; }
     .total-card.card-done::before { display: none; }
     .total-card.card-left::after  { display: none; }
-    .card-value { font-size: 3rem; }
-    .card-bp { font-size: 0.92rem; }
+    .card-value { font-size: 2.4rem; }
+    .card-bp { font-size: 0.9rem; }
+    .card-label { font-size: 0.74rem; }
   }
 
   /* ── ПЕРСОНАЖ 2 ── */
   body.char2-active .total-split::before {
-    background:
-      radial-gradient(ellipse 55% 100% at 15% 0%, rgba(57,255,100,0.10) 0%, transparent 70%),
-      radial-gradient(ellipse 55% 100% at 85% 0%, rgba(0,210,200,0.10) 0%, transparent 70%);
+    background: none;
   }
   body.char2-active .total-divider {
     background: linear-gradient(
       180deg,
       transparent 0%,
-      rgba(57,255,100,0.5) 15%,
+      rgba(42,196,148,0.5) 15%,
       rgba(0,220,210,0.85) 50%,
       rgba(0,180,170,0.5) 85%,
       transparent 100%
@@ -1179,30 +1282,30 @@
     box-shadow: 0 0 6px rgba(0,220,210,0.6), 0 0 18px rgba(0,220,210,0.25);
   }
   body.char2-active .total {
-    background: linear-gradient(90deg, rgba(57,255,100,0.85) 0%, rgba(0,210,200,0.6) 50%, rgba(0,180,170,0.85) 100%);
+    background: linear-gradient(90deg, rgba(42,196,148,0.85) 0%, rgba(0,210,200,0.6) 50%, rgba(0,180,170,0.85) 100%);
     box-shadow:
-      -4px 0 14px rgba(57,255,100,0.3),
+      -4px 0 14px rgba(42,196,148,0.3),
       4px 0 14px rgba(0,210,200,0.3),
       0 0 24px rgba(0,200,190,0.12);
   }
   body.char2-active .total-card.card-done::before { display: none; }
   body.char2-active .total-card.card-left::after { display: none; }
   body.char2-active .total-split::after { display: none; }
-  body.char2-active .total-card.card-done .card-label { color: rgba(100, 255, 150, 0.65); }
+  body.char2-active .total-card.card-done .card-label,
   body.char2-active .total-card.card-done .card-value,
   body.char2-active .total-card.card-done .card-bp {
-    background: linear-gradient(135deg, #b8ffd0, #39ff64, #00cc44);
+    background: linear-gradient(135deg, #ffffff, #b3faff, #00d2ff);
     -webkit-background-clip: text; background-clip: text; color: transparent;
-    filter: drop-shadow(0 0 8px rgba(57,255,100,0.7));
+    filter: drop-shadow(0 0 8px rgba(0,210,255,0.7));
   }
-  body.char2-active .total-card.card-left .card-label { color: rgba(0, 220, 210, 0.65); }
+  body.char2-active .total-card.card-left .card-label,
   body.char2-active .total-card.card-left .card-value,
   body.char2-active .total-card.card-left .card-bp {
-    background: linear-gradient(135deg, #aafff8, #00d8c8, #009990);
+    background: linear-gradient(135deg, #c6ffb3, #39ff6a, #1a9c40);
     -webkit-background-clip: text; background-clip: text; color: transparent;
-    filter: drop-shadow(0 0 8px rgba(0,210,200,0.8));
+    filter: drop-shadow(0 0 8px rgba(57,255,106,0.7));
   }
-  body.char2-active .total-card.card-left .card-max-row { color: rgba(0, 220, 210, 0.65); }
+  body.char2-active .total-card.card-left .card-max-row { color: rgba(57, 255, 106, 0.65); }
 
   .tasks-column tr{ cursor:pointer; user-select: none; }
   .tasks-column td{ cursor: pointer; user-select: none; }
@@ -1502,15 +1605,15 @@ body.char2-active .filter-btn.active[data-col="col-fraction"]:hover {
   /* ── Прогресс заданий в карточке Выполнено ── */
   .task-progress-wrap {
     width: 100%;
-    margin-top: 10px;
+    margin-top: 5px;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
-    gap: 5px;
+    gap: 8px;
   }
   .task-progress-bar {
-    width: 100%;
-    height: 5px;
+    flex: 1;
+    height: 4px;
     border-radius: 10px;
     background: rgba(255,255,255,0.07);
     overflow: hidden;
@@ -1524,20 +1627,22 @@ body.char2-active .filter-btn.active[data-col="col-fraction"]:hover {
     transition: width 0.45s cubic-bezier(0.4,0,0.2,1);
   }
   body.char2-active .task-progress-fill {
-    background: linear-gradient(90deg, #00cc44, #39ff64);
-    box-shadow: 0 0 8px rgba(57,255,100,0.7);
+    background: linear-gradient(90deg, #128a72, #2ac496);
+    box-shadow: 0 0 8px rgba(42,196,148,0.7);
   }
   .task-progress-label {
-    font-size: 0.72rem;
+    font-size: 0.62rem;
     font-weight: 700;
-    letter-spacing: 1.5px;
-    color: rgba(100,220,255,0.55);
+    letter-spacing: 0.8px;
+    color: rgba(180,235,255,0.85);
     font-family: monospace;
+    white-space: nowrap;
+    flex-shrink: 0;
     user-select: none;
     cursor: default;
   }
   body.char2-active .task-progress-label {
-    color: rgba(100,255,150,0.55);
+    color: rgba(180,255,200,0.85);
   }
 
   /* ================== COSMOS TOGGLE ================== */
@@ -1622,33 +1727,33 @@ body.char2-active .filter-btn.active[data-col="col-fraction"]:hover {
 
   /* Персонаж 2 — зелёная тема */
   body.char2-active .cosmos-btn {
-    border-color: rgba(57,255,100,0.38);
+    border-color: rgba(42,196,148,0.38);
     background: linear-gradient(135deg, rgba(5,22,10,0.92), rgba(3,14,7,0.95));
-    box-shadow: 0 0 6px rgba(57,255,100,0.1);
+    box-shadow: 0 0 6px rgba(42,196,148,0.1);
     animation: none;
   }
   body.char2-active .cosmos-btn svg.galaxy-icon {
-    filter: drop-shadow(0 0 2px rgba(57,255,100,0.3));
+    filter: drop-shadow(0 0 2px rgba(42,196,148,0.3));
     opacity: 0.5;
   }
   body.char2-active .cosmos-btn:hover {
-    border-color: rgba(57,255,100,0.72);
+    border-color: rgba(42,196,148,0.72);
     box-shadow:
-      0 0 18px rgba(57,255,100,0.36),
+      0 0 18px rgba(42,196,148,0.36),
       0 2px 10px rgba(0,0,0,0.5);
   }
   body.char2-active .cosmos-btn:hover svg.galaxy-icon {
-    filter: drop-shadow(0 0 5px rgba(57,255,100,0.8));
+    filter: drop-shadow(0 0 5px rgba(42,196,148,0.8));
   }
   /* АКТИВНО — зелёный неон, Персонаж 2 */
   body.char2-active .cosmos-btn.active {
-    border-color: rgba(57,255,100,0.92);
+    border-color: rgba(42,196,148,0.92);
     background: linear-gradient(135deg, rgba(0,28,10,0.95), rgba(0,16,7,0.98));
-    box-shadow: 0 0 14px rgba(57,255,100,0.5), 0 2px 8px rgba(0,0,0,0.5);
+    box-shadow: 0 0 14px rgba(42,196,148,0.5), 0 2px 8px rgba(0,0,0,0.5);
     animation: greenCharPulse 2.2s ease-in-out infinite alternate;
   }
   body.char2-active .cosmos-btn.active svg.galaxy-icon {
-    filter: drop-shadow(0 0 5px rgba(57,255,100,0.9));
+    filter: drop-shadow(0 0 5px rgba(42,196,148,0.9));
     opacity: 1;
   }
 
@@ -1687,6 +1792,15 @@ body.char2-active .filter-btn.active[data-col="col-fraction"]:hover {
     background: rgba(16,22,40,0.97);
     border-right: 1.5px solid rgba(120,130,255,0.4);
     border-bottom: 1.5px solid rgba(120,130,255,0.4);
+  }
+  /* Попап открывается ВНИЗ от кнопки — стрелка вверху, указывает вверх */
+  .cosmos-popup.popup-below::after {
+    bottom: auto;
+    top: -7px;
+    border-right: none;
+    border-bottom: none;
+    border-left: 1.5px solid rgba(120,130,255,0.4);
+    border-top: 1.5px solid rgba(120,130,255,0.4);
   }
   .cosmos-popup-text {
     font-size: 0.82rem;
@@ -1938,18 +2052,18 @@ body.char2-active .filter-btn.active[data-col="col-fraction"]:hover {
   }
   body.char2-active .online-monitor-btn {
     color: #39ff6a;
-    border-color: rgba(57,255,100,0.5) !important;
-    background: rgba(57,255,100,0.07) !important;
+    border-color: rgba(42,196,148,0.5) !important;
+    background: rgba(42,196,148,0.07) !important;
     animation: onlineBtnPulseGreen 2.5s ease-in-out infinite alternate;
   }
   body.char2-active .online-monitor-btn:hover {
-    border-color: rgba(57,255,100,0.9) !important;
-    background: rgba(57,255,100,0.14) !important;
-    box-shadow: 0 0 22px rgba(57,255,100,0.5), 0 2px 10px rgba(0,0,0,0.5) !important;
+    border-color: rgba(42,196,148,0.9) !important;
+    background: rgba(42,196,148,0.14) !important;
+    box-shadow: 0 0 22px rgba(42,196,148,0.5), 0 2px 10px rgba(0,0,0,0.5) !important;
   }
   @keyframes onlineBtnPulseGreen {
-    0%  { box-shadow: 0 0 6px rgba(57,255,100,0.2), 0 0 12px rgba(0,255,80,0.08); }
-    100%{ box-shadow: 0 0 16px rgba(57,255,100,0.42), 0 0 28px rgba(0,255,80,0.18); }
+    0%  { box-shadow: 0 0 6px rgba(42,196,148,0.2), 0 0 12px rgba(54,214,160,0.08); }
+    100%{ box-shadow: 0 0 16px rgba(42,196,148,0.42), 0 0 28px rgba(54,214,160,0.18); }
   }
 
   /* ══════════════════════════════════════════
@@ -1991,10 +2105,10 @@ body.char2-active .filter-btn.active[data-col="col-fraction"]:hover {
     animation: omSlideIn 0.22s cubic-bezier(0.4,0,0.2,1);
   }
   body.char2-active .om-box {
-    border-color: rgba(57,255,100,0.45);
+    border-color: rgba(42,196,148,0.45);
     box-shadow:
-      0 0 0 1px rgba(57,255,100,0.08) inset,
-      0 0 40px rgba(57,255,100,0.18),
+      0 0 0 1px rgba(42,196,148,0.08) inset,
+      0 0 40px rgba(42,196,148,0.18),
       0 20px 60px rgba(0,0,0,0.7);
   }
   @keyframes omSlideIn {
@@ -2010,7 +2124,7 @@ body.char2-active .filter-btn.active[data-col="col-fraction"]:hover {
     flex-shrink: 0;
   }
   body.char2-active .om-header {
-    border-bottom-color: rgba(57,255,100,0.15);
+    border-bottom-color: rgba(42,196,148,0.15);
   }
   .om-title-block {
     display: flex;
@@ -2031,9 +2145,9 @@ body.char2-active .filter-btn.active[data-col="col-fraction"]:hover {
     color: #00eeff;
   }
   body.char2-active .om-icon {
-    border-color: rgba(57,255,100,0.55);
-    background: rgba(57,255,100,0.1);
-    box-shadow: 0 0 10px rgba(57,255,100,0.22);
+    border-color: rgba(42,196,148,0.55);
+    background: rgba(42,196,148,0.1);
+    box-shadow: 0 0 10px rgba(42,196,148,0.22);
     color: #39ff6a;
   }
   .om-title {
@@ -2051,7 +2165,7 @@ body.char2-active .filter-btn.active[data-col="col-fraction"]:hover {
     background: linear-gradient(135deg, #39ff6a, #afffcc);
     -webkit-background-clip: text;
     background-clip: text;
-    filter: drop-shadow(0 0 6px rgba(57,255,100,0.5));
+    filter: drop-shadow(0 0 6px rgba(42,196,148,0.5));
   }
   .om-total-badge {
     font-size: 0.88rem;
@@ -2062,7 +2176,7 @@ body.char2-active .filter-btn.active[data-col="col-fraction"]:hover {
     margin-top: 4px;
   }
   body.char2-active .om-total-badge {
-    color: rgba(57,255,100,0.6);
+    color: rgba(42,196,148,0.6);
   }
   .om-header-right {
     display: flex;
@@ -2100,14 +2214,14 @@ body.char2-active .filter-btn.active[data-col="col-fraction"]:hover {
     to { transform: rotate(360deg); }
   }
   body.char2-active .om-refresh-btn {
-    border-color: rgba(57,255,100,0.45);
-    background: rgba(57,255,100,0.08);
+    border-color: rgba(42,196,148,0.45);
+    background: rgba(42,196,148,0.08);
     color: #39ff6a;
   }
   body.char2-active .om-refresh-btn:hover {
-    border-color: rgba(57,255,100,0.8);
-    background: rgba(57,255,100,0.16);
-    box-shadow: 0 0 14px rgba(57,255,100,0.3);
+    border-color: rgba(42,196,148,0.8);
+    background: rgba(42,196,148,0.16);
+    box-shadow: 0 0 14px rgba(42,196,148,0.3);
   }
   .om-close-btn {
     width: 40px;
@@ -2144,8 +2258,8 @@ body.char2-active .filter-btn.active[data-col="col-fraction"]:hover {
   .om-body::-webkit-scrollbar { width: 4px; }
   .om-body::-webkit-scrollbar-track { background: transparent; }
   .om-body::-webkit-scrollbar-thumb { background: rgba(0,200,255,0.25); border-radius: 4px; }
-  body.char2-active .om-body { scrollbar-color: rgba(57,255,100,0.25) transparent; }
-  body.char2-active .om-body::-webkit-scrollbar-thumb { background: rgba(57,255,100,0.25); }
+  body.char2-active .om-body { scrollbar-color: rgba(42,196,148,0.25) transparent; }
+  body.char2-active .om-body::-webkit-scrollbar-thumb { background: rgba(42,196,148,0.25); }
   .om-status-text {
     font-family: monospace;
     font-size: 0.82rem;
@@ -2157,7 +2271,7 @@ body.char2-active .filter-btn.active[data-col="col-fraction"]:hover {
     padding: 36px 0;
   }
   body.char2-active .om-status-text {
-    color: rgba(57,255,100,0.45);
+    color: rgba(42,196,148,0.45);
   }
   .om-error-text {
     color: rgba(255,100,100,0.75);
@@ -2190,9 +2304,9 @@ body.char2-active .filter-btn.active[data-col="col-fraction"]:hover {
     box-shadow: 0 0 12px rgba(0,200,255,0.12);
   }
   body.char2-active .om-server-row:hover {
-    background: rgba(57,255,100,0.07);
-    border-color: rgba(57,255,100,0.22);
-    box-shadow: 0 0 12px rgba(57,255,100,0.1);
+    background: rgba(42,196,148,0.07);
+    border-color: rgba(42,196,148,0.22);
+    box-shadow: 0 0 12px rgba(42,196,148,0.1);
   }
   /* ══════════════════════════════════════════
      🧪 ЭКСПЕРИМЕНТАЛЬНАЯ ФУНКЦИЯ: БАЛАНС BP (beta)
@@ -2204,19 +2318,16 @@ body.char2-active .filter-btn.active[data-col="col-fraction"]:hover {
   ══════════════════════════════════════════ */
   .total-wrap {
     position: relative;
-    margin-top: 10px;
+    margin-top: 0;
   }
   .bp-balance-widget {
-    position: absolute;
-    left: 50%;
-    top: 0;
-    transform: translate(-50%, 0%);
+    position: relative;
     z-index: 5;
     display: inline-flex;
     align-items: center;
     gap: 14px;
     padding: 11px 26px 11px 24px;
-    border-radius: 0 0 40px 40px;
+    border-radius: 10px 10px 40px 40px;
     background: linear-gradient(90deg, rgba(0,210,255,0.9) 0%, rgba(180,80,255,0.75) 50%, rgba(255,80,160,0.9) 100%);
     box-shadow: 0 4px 16px rgba(0,0,0,0.45), 0 0 22px rgba(180,80,255,0.25);
     white-space: nowrap;
@@ -2228,7 +2339,7 @@ body.char2-active .filter-btn.active[data-col="col-fraction"]:hover {
     content: '';
     position: absolute;
     inset: 1.5px;
-    border-radius: 0 0 38px 38px;
+    border-radius: 8.5px 8.5px 38px 38px;
     background: rgba(6,14,28,0.94);
     z-index: -1;
   }
@@ -2316,6 +2427,37 @@ body.char2-active .filter-btn.active[data-col="col-fraction"]:hover {
   .bp-newday-btn:active {
     transform: scale(0.96);
   }
+  .bp-customize-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    border-radius: 50%;
+    border: 1.5px solid rgba(200,140,255,0.55);
+    background: rgba(120,60,220,0.16);
+    color: #e2c9ff;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+  }
+  .bp-customize-btn svg {
+    display: block;
+    pointer-events: none;
+  }
+  .bp-customize-btn:hover {
+    background: rgba(150,80,255,0.28);
+    border-color: rgba(200,150,255,0.9);
+    box-shadow: 0 0 14px rgba(180,100,255,0.45);
+    color: #fff;
+    transform: scale(1.08);
+  }
+  .bp-customize-btn:active {
+    transform: scale(0.94);
+  }
   .bp-reset-btn {
     display: inline-flex;
     align-items: center;
@@ -2352,7 +2494,7 @@ body.char2-active .filter-btn.active[data-col="col-fraction"]:hover {
 
   /* ── ПЕРСОНАЖ 2: зелёно-бирюзовая палитра виджета баланса ── */
   body.char2-active .bp-balance-widget {
-    background: linear-gradient(90deg, rgba(57,255,100,0.9) 0%, rgba(0,210,200,0.8) 50%, rgba(0,180,170,0.9) 100%);
+    background: linear-gradient(90deg, rgba(42,196,148,0.9) 0%, rgba(0,210,200,0.8) 50%, rgba(0,180,170,0.9) 100%);
     box-shadow: 0 4px 16px rgba(0,0,0,0.45), 0 0 22px rgba(0,210,200,0.3);
   }
   body.char2-active .bp-balance-widget:hover {
@@ -2360,8 +2502,8 @@ body.char2-active .filter-btn.active[data-col="col-fraction"]:hover {
   }
   body.char2-active .bp-balance-label { color: rgba(170,255,220,0.7); }
   body.char2-active .bp-balance-input {
-    border-bottom-color: rgba(57,255,100,0.4);
-    background-image: linear-gradient(135deg, #b8ffd0, #39ff9c, #00d8c8);
+    border-bottom-color: rgba(42,196,148,0.4);
+    background-image: linear-gradient(135deg, #a0e8d4, #29c2a0, #00d8c8);
     caret-color: #baffe0;
     filter: drop-shadow(0 0 8px rgba(57,255,150,0.55));
   }
@@ -2371,112 +2513,182 @@ body.char2-active .filter-btn.active[data-col="col-fraction"]:hover {
     text-shadow: 0 0 8px rgba(80,255,190,0.6), 0 0 16px rgba(0,220,210,0.35);
   }
 
+  /* Персонаж 2: кнопка кастомизации — зелёный тон вместо фиолетового */
+  body.char2-active .bp-customize-btn {
+    border-color: rgba(80,255,170,0.6);
+    background: rgba(0,220,130,0.16);
+    color: #baffdc;
+  }
+  body.char2-active .bp-customize-btn:hover {
+    background: rgba(20,255,150,0.28);
+    border-color: rgba(100,255,190,0.95);
+    box-shadow: 0 0 14px rgba(0,230,160,0.45);
+    color: #eafff5;
+  }
+  /* Персонаж 2: кнопка сброса — бирюзовый тон вместо красного */
+  body.char2-active .bp-reset-btn {
+    border-color: rgba(0,220,210,0.75);
+    background: rgba(0,220,210,0.16);
+    color: #baffef;
+  }
+  body.char2-active .bp-reset-btn:hover {
+    background: rgba(0,230,210,0.28);
+    border-color: rgba(60,255,230,1);
+    box-shadow: 0 0 14px rgba(0,220,210,0.45);
+    color: #fff;
+  }
+  /* Персонаж 2: кнопка подсветки заданий — зелёно-бирюзовый тон вместо красного */
+  body.char2-active #taskHighlightBtn {
+    background: rgba(0,220,180,0.20) !important;
+    border-color: rgba(60,255,190,0.75) !important;
+    color: rgba(190,255,230,1) !important;
+    box-shadow: 0 0 12px rgba(0,220,180,0.45) !important;
+  }
+  body.char2-active #taskHighlightBtn:hover {
+    border-color: rgba(90,255,210,1) !important;
+    color: #eafff8 !important;
+    background: rgba(0,235,190,0.32) !important;
+    box-shadow: 0 0 18px rgba(0,225,190,0.65) !important;
+  }
+
   @media (max-width: 700px) {
-    .total-wrap { margin-top: 34px; }
     .bp-balance-widget {
       gap: 10px;
       padding: 9px 16px 9px 16px;
       flex-wrap: wrap;
       justify-content: center;
       max-width: 92vw;
-      transform: translate(-50%, -20%);
     }
     .bp-balance-input { font-size: 1.4rem; width: 6.2ch; }
   }
 
-  /* ── PINNED SERVER WIDGET ── */
-  #pinnedServer {
+  /* ── PINNED SERVERS (до 2 шт.) — закреплены в верхнем правом углу
+     .panel-group, рядом с логотипом (который остаётся по центру).
+     Открепление — через повторный клик по серверу в окне
+     мониторинга — здесь это просто текст на панели, без кнопочного
+     обрамления. Каждый закреплённый сервер — «НАЗВАНИЕ ● ОНЛАЙН»;
+     если закреплено 2 — они идут друг за другом по горизонтали
+     (не друг над другом), а полосы-разделители по бокам растягиваются
+     на всю высоту этого блока. */
+  .pinned-servers-wrap {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 14px;
+  }
+  .pinned-servers-wrap.has-pins {
+    position: relative;
+    padding: 4px 18px;
+  }
+  .pinned-servers-wrap.has-pins::before,
+  .pinned-servers-wrap.has-pins::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: linear-gradient(to bottom, transparent, rgba(0,220,255,0.4) 12%, rgba(0,220,255,0.4) 88%, transparent);
+    transition: background 0.3s ease;
+  }
+  .pinned-servers-wrap.has-pins::before { left: 0; }
+  .pinned-servers-wrap.has-pins::after  { right: 0; }
+  body.char2-active .pinned-servers-wrap.has-pins::before,
+  body.char2-active .pinned-servers-wrap.has-pins::after {
+    background: linear-gradient(to bottom, transparent, rgba(42,196,148,0.4) 12%, rgba(42,196,148,0.4) 88%, transparent);
+  }
+  .pinned-server-widget {
+    display: flex;
+    flex-direction: row;
+    align-items: baseline;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+    animation: pinnedWidgetIn 0.22s ease;
+  }
+  /* Тонкая линия между двумя закреплёнными серверами (теперь в ряд) */
+  .pinned-server-widget + .pinned-server-widget {
+    margin-left: 2px;
+    padding-left: 14px;
+    border-left: 1px solid rgba(255,255,255,0.08);
+  }
+  body.char2-active .pinned-server-widget + .pinned-server-widget {
+    border-left-color: rgba(42,196,148,0.12);
+  }
+  @keyframes pinnedWidgetIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  .pinned-server-name {
+    font-family: monospace;
+    font-size: 0.84rem;
+    font-weight: 900;
+    letter-spacing: 1.6px;
+    text-transform: uppercase;
+    background: linear-gradient(135deg, #a8f0ff, #00d2ff, #7df0ff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    filter: drop-shadow(0 0 7px rgba(0,210,255,0.6));
+    line-height: 1.1;
+  }
+  body.char2-active .pinned-server-name {
+    background: linear-gradient(135deg, #afffcc, #39ff6a, #00ffaa);
+    -webkit-background-clip: text;
+    background-clip: text;
+    filter: drop-shadow(0 0 7px rgba(42,196,148,0.6));
+  }
+  .pinned-server-meta {
     display: inline-flex;
     align-items: center;
-    gap: 10px;
-    padding: 7px 16px;
-    border-radius: 40px;
-    background: rgba(0,180,255,0.07);
-    border: 1.5px solid rgba(0,200,255,0.25);
-    box-shadow: 0 0 10px rgba(0,200,255,0.1);
-    cursor: pointer;
-    transition: all 0.2s ease, opacity 0.2s ease, visibility 0.2s ease;
-    white-space: nowrap;
-    user-select: none;
-    visibility: hidden;
-    opacity: 0;
-    pointer-events: none;
+    gap: 6px;
   }
-  #pinnedServer:hover {
-    background: rgba(0,200,255,0.13);
-    border-color: rgba(0,200,255,0.5);
-    box-shadow: 0 0 16px rgba(0,200,255,0.22);
-  }
-  body.char2-active #pinnedServer {
-    background: rgba(57,255,100,0.07);
-    border-color: rgba(57,255,100,0.25);
-    box-shadow: 0 0 10px rgba(57,255,100,0.1);
-  }
-  body.char2-active #pinnedServer:hover {
-    background: rgba(57,255,100,0.13);
-    border-color: rgba(57,255,100,0.5);
-    box-shadow: 0 0 16px rgba(57,255,100,0.22);
-  }
-  #pinnedServer.visible { visibility: visible; opacity: 1; pointer-events: auto; }
   .pinned-dot {
-    width: 10px;
-    height: 10px;
+    width: 7px;
+    height: 7px;
     border-radius: 50%;
     flex-shrink: 0;
     transition: background 0.3s, box-shadow 0.3s;
   }
-  .pinned-server-name {
-    font-size: 0.78rem;
-    font-weight: 800;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    color: rgba(180,220,255,0.75);
-  }
-  .pinned-server-sep {
-    width: 1px;
-    height: 14px;
-    background: rgba(255,255,255,0.15);
-    flex-shrink: 0;
-  }
   .pinned-server-count {
     font-family: monospace;
-    font-size: 1rem;
-    font-weight: 900;
-    letter-spacing: 0.5px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: rgba(255,255,255,0.9);
     transition: color 0.3s, text-shadow 0.3s;
   }
-  .pinned-close {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    font-size: 0.62rem;
-    line-height: 1;
-    color: rgba(255,255,255,0.45);
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(0,200,255,0.25);
-    box-shadow: 0 0 6px rgba(0,200,255,0.15);
-    margin-left: 2px;
-    flex-shrink: 0;
-    cursor: pointer;
-    transition: color 0.2s, border-color 0.2s, box-shadow 0.2s, background 0.2s;
+  @media (max-width: 1300px) {
+    .pinned-servers-wrap { justify-content: center; }
   }
-  #pinnedServer:hover .pinned-close {
-    color: rgba(255,255,255,0.9);
-    border-color: rgba(0,220,255,0.7);
-    box-shadow: 0 0 8px rgba(0,200,255,0.55), 0 0 14px rgba(0,200,255,0.25);
-    background: rgba(0,200,255,0.12);
+
+  /* Подсветка закреплённых серверов в списке мониторинга */
+  .om-server-row.is-pinned {
+    background: rgba(255,205,40,0.09);
+    border-color: rgba(255,205,40,0.45);
+    box-shadow: 0 0 12px rgba(255,205,40,0.18);
   }
-  body.char2-active .pinned-close {
-    border-color: rgba(57,255,100,0.25);
-    box-shadow: 0 0 6px rgba(57,255,100,0.15);
+  .om-server-row.is-pinned:hover {
+    background: rgba(255,205,40,0.15);
+    border-color: rgba(255,205,40,0.7);
+    box-shadow: 0 0 16px rgba(255,205,40,0.28);
   }
-  body.char2-active #pinnedServer:hover .pinned-close {
-    border-color: rgba(57,255,100,0.7);
-    box-shadow: 0 0 8px rgba(57,255,100,0.55), 0 0 14px rgba(57,255,100,0.25);
-    background: rgba(57,255,100,0.12);
+  body.char2-active .om-server-row.is-pinned {
+    background: rgba(42,196,148,0.09);
+    border-color: rgba(42,196,148,0.45);
+    box-shadow: 0 0 12px rgba(42,196,148,0.2);
+  }
+  body.char2-active .om-server-row.is-pinned:hover {
+    background: rgba(42,196,148,0.15);
+    border-color: rgba(42,196,148,0.75);
+    box-shadow: 0 0 16px rgba(42,196,148,0.3);
+  }
+  .om-pin-badge {
+    margin-left: 6px;
+    font-size: 0.78em;
+    filter: drop-shadow(0 0 4px rgba(255,205,40,0.6));
   }
 
   .om-dot {
@@ -2489,7 +2701,7 @@ body.char2-active .filter-btn.active[data-col="col-fraction"]:hover {
   .om-dot.tier-orange { background: rgba(255,145,40,0.85);  box-shadow: 0 0 7px 1px rgba(255,130,20,0.6), 0 0 16px rgba(220,90,0,0.25);  border: 1.5px solid rgba(255,160,60,0.5); }
   .om-dot.tier-yellow { background: rgba(255,225,50,0.85);  box-shadow: 0 0 7px 1px rgba(255,210,20,0.6), 0 0 16px rgba(200,170,0,0.25); border: 1.5px solid rgba(255,230,60,0.5); }
   .om-dot.tier-cyan   { background: rgba(0,210,245,0.85);   box-shadow: 0 0 7px 1px rgba(0,210,255,0.6),  0 0 16px rgba(0,170,220,0.25);  border: 1.5px solid rgba(0,215,255,0.5); }
-  .om-dot.tier-green  { background: rgba(50,230,100,0.85);  box-shadow: 0 0 7px 1px rgba(40,230,90,0.6),  0 0 16px rgba(0,180,50,0.25);   border: 1.5px solid rgba(57,255,100,0.5); }
+  .om-dot.tier-green  { background: rgba(42,196,148,0.85);  box-shadow: 0 0 7px 1px rgba(30,182,130,0.6),  0 0 16px rgba(22,152,115,0.25);   border: 1.5px solid rgba(42,196,148,0.5); }
   .om-row-sep {
     width: 1px;
     height: 18px;
@@ -2521,7 +2733,7 @@ body.char2-active .filter-btn.active[data-col="col-fraction"]:hover {
     flex-shrink: 0;
   }
   body.char2-active .om-server-num {
-    color: rgba(57,255,100,0.38);
+    color: rgba(42,196,148,0.38);
   }
   .om-server-online {
     font-family: monospace;
@@ -2534,7 +2746,7 @@ body.char2-active .filter-btn.active[data-col="col-fraction"]:hover {
   .om-server-online.tier-orange { color: rgba(255,160,50,0.95);  text-shadow: 0 0 10px rgba(255,130,20,0.6); }
   .om-server-online.tier-yellow { color: rgba(255,230,60,0.95);  text-shadow: 0 0 10px rgba(255,210,20,0.6); }
   .om-server-online.tier-cyan   { color: rgba(0,215,250,0.95);   text-shadow: 0 0 10px rgba(0,210,255,0.65); }
-  .om-server-online.tier-green  { color: rgba(57,235,105,0.95);  text-shadow: 0 0 10px rgba(40,230,90,0.65); }
+  .om-server-online.tier-green  { color: rgba(57,235,105,0.95);  text-shadow: 0 0 10px rgba(30,182,130,0.65); }
   .om-footer {
     border-top: 1px solid rgba(0,220,255,0.1);
     padding: 16px 28px;
@@ -2544,7 +2756,7 @@ body.char2-active .filter-btn.active[data-col="col-fraction"]:hover {
     flex-shrink: 0;
   }
   body.char2-active .om-footer {
-    border-top-color: rgba(57,255,100,0.1);
+    border-top-color: rgba(42,196,148,0.1);
   }
   .om-footer-total {
     font-family: monospace;
@@ -2556,14 +2768,13 @@ body.char2-active .filter-btn.active[data-col="col-fraction"]:hover {
   }
   body.char2-active .om-footer-total {
     color: #39ff6a;
-    text-shadow: 0 0 8px rgba(57,255,100,0.5);
+    text-shadow: 0 0 8px rgba(42,196,148,0.5);
   }
   .om-footer-hint {
     font-size: 0.7rem;
     color: rgba(100,120,150,0.55);
     letter-spacing: 1px;
     font-family: monospace;
-  }
   }
 </style>
 </head>
@@ -2713,8 +2924,8 @@ body.char2-active .filter-btn.active[data-col="col-fraction"]:hover {
   const SYNC_KEYS = [
     'daily_tasks_done_v4_grid',
     'daily_tasks_done_v4_grid_char2',
-    'daily_tasks_done_v4_grid_online',
-    'daily_tasks_done_v4_grid_char2_online',
+    'daily_tasks_online_hours_v1',
+    'daily_tasks_online_hours_v1_char2',
     'daily_tasks_vip_mode_v4',
     'daily_tasks_vip_mode_v4_char2',
     'daily_tasks_x2_mode_v4',
@@ -2744,7 +2955,7 @@ body.char2-active .filter-btn.active[data-col="col-fraction"]:hover {
     'task_highlight_color_v2_char1',
     'task_highlight_color_v2_char2',
     'cosmos_active',
-    'pinned_server_v1',
+    'pinned_servers_v2',
     // 🧪 ЭКСПЕРИМЕНТАЛЬНО: баланс BP персонажа (см. блок скрипта в конце body)
     'bp_balance_v1',
     'bp_balance_v1_char2'
@@ -3041,9 +3252,10 @@ body.char2-active .filter-btn.active[data-col="col-fraction"]:hover {
 <div class="layout">
 <div class="super-panel">
 <div class="title-capsule">
-  <div class="title-capsule-inner" id="titleCapsule" style="cursor:default;">
-    <span class="title-main">⚡ ФАРМ BONUS POINT ⚡</span>
-    <span class="title-sub">by LIME</span>
+  <!-- PINNED SERVERS WIDGET (до 2 шт.) — верхний правый угол .panel-group,
+       сервера идут друг за другом по горизонтали -->
+  <div class="title-capsule-pinned">
+    <div class="pinned-servers-wrap" id="pinnedServersWrap"></div>
   </div>
 </div>
 
@@ -3173,34 +3385,41 @@ body.char2-active .filter-btn.active[data-col="col-fraction"]:hover {
 
 <div class="panel-seam"></div>
 
+<div class="bp-balance-anchor" style="position:relative; height:0;">
+    <div class="bp-balance-widget" id="bpBalanceWidget">
+      <span class="bp-balance-label">Мой баланс</span>
+      <div class="bp-balance-value-wrap">
+        <input type="text" id="bpBalanceInput" class="bp-balance-input" inputmode="numeric" autocomplete="off" maxlength="7" value="0">
+        <span class="bp-balance-suffix">BP</span>
+      </div>
+      <button type="button" id="bpNewDayBtn" class="bp-newday-btn" title="Зафиксировать сегодняшний прогресс в баланс и начать новый день (задания сбросятся)"><span class="bp-newday-icon">☀</span>Новый день</button>
+      <button type="button" id="bpCustomizeBtn" class="bp-customize-btn" onclick="openCustomization(event)" title="Кастомизация">
+        <svg width="15" height="15" viewBox="0 0 13 13" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="6.5" cy="6.5" r="2" stroke="currentColor" stroke-width="1.3"/>
+          <path d="M6.5 1v1M6.5 11v1M1 6.5h1M11 6.5h1M2.636 2.636l.707.707M9.657 9.657l.707.707M2.636 10.364l.707-.707M9.657 3.343l.707-.707" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <button id="resetBtn" class="bp-reset-btn" title="Сбросить прогресс заданий. Если «Новый день» не был нажат — сегодняшние BP спишутся с баланса">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3 11a9 9 0 0 1 15.5-5.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <path d="M21 13a9 9 0 0 1-15.5 5.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <path d="M21 3v6h-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M3 21v-6h6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
 <div class="panel-group">
 <div class="controls" style="position:relative;">
   <div class="center-actions">
-    <div class="left-group">
-      <div class="char-toggle-pill" id="charTogglePill" onclick="toggleCharPopup(event)" title="Переключить персонажа">
-        <span class="ctp-label" id="ctpLabel">Персонаж 1</span>
-        <span class="ctp-circle" id="ctpCircle">1</span>
+    <div class="header-logo">
+      <div class="title-capsule-inner" id="titleCapsule" style="cursor:default;">
+        <span class="title-main">⚡ ФАРМ BONUS POINT ⚡</span>
+        <span class="title-sub">by LIME</span>
       </div>
-
-    <label class="toggle-switch">
-      <input id="vipCheckbox" type="checkbox">
-      <span class="switch-slider"></span>
-      <span class="toggle-btn toggle-btn-vip">⬡ Platinum VIP</span>
-    </label>
-    <label class="toggle-switch">
-      <input id="x2Checkbox" type="checkbox">
-      <span class="switch-slider"></span>
-      <span class="toggle-btn toggle-btn-x2">✦ Акция ×2</span>
-    </label>
     </div>
 
-    <div class="date-display" id="currentDate">
-      <span class="date-day" id="dateDayName"></span>
-      <span class="date-main" id="dateMainText">—</span>
-      <span class="date-online"><span class="online-dot-mini"></span><span id="onlineCount">—</span> онлайн
-
-      </span>
-    </div>
     <div class="right-group" style="display:flex; align-items:center; gap: 14px;">
       <span id="userNameDisplay" style="
         font-family: monospace;
@@ -3448,76 +3667,60 @@ body.char2-active .filter-btn.active[data-col="col-fraction"]:hover {
   </div>
 </div>
 
-<div class="panel-seam"></div>
-
-<div class="legend">
-  <div class="legend-left">
-  </div>
-  <div class="legend-filters">
-  <button class="filter-btn active" data-col="col-easy">ЛЁГКИЕ</button>
-  <button class="filter-btn active" data-col="col-medium">СРЕДНИЕ</button>
-  <button class="filter-btn active" data-col="col-joint">СОВМЕСТНЫЕ</button>
-  <button class="filter-btn active" data-col="col-avoid">СЛОЖНЫЕ</button>
-  <button class="filter-btn active" data-col="col-fraction">ФРАКЦИОННЫЕ</button>
-  </div>
-  <div class="legend-settings">
-  <!-- PINNED SERVER WIDGET -->
-  <div id="pinnedServer" title="Нажмите для обновления">
-    <div class="pinned-dot" id="pinnedDot"></div>
-    <span class="pinned-server-name" id="pinnedServerName">—</span>
-    <div class="pinned-server-sep"></div>
-    <span class="pinned-server-count" id="pinnedServerCount">—</span>
-    <span class="pinned-close" id="pinnedCloseBtn" title="Открепить">✕</span>
-  </div>
-  </div>
-</div>
 </div> <!-- /super-panel -->
 <div class="panel-connector"><span class="connector-node"></span></div>
 
 <div class="total-wrap" id="totalWrap">
-  <!-- ══════════════════════════════════════════════════════════
-       🧪 ЭКСПЕРИМЕНТАЛЬНАЯ ФУНКЦИЯ: БАЛАНС BP ПЕРСОНАЖА (beta)
-       Логика полностью в скрипте в конце <body> — блок с тем же
-       заголовком "ЭКСПЕРИМЕНТАЛЬНАЯ ФУНКЦИЯ: БАЛАНС BP". При
-       необходимости отключить/удалить — достаточно убрать этот
-       <div id="bpBalanceWidget"> и соответствующий <script>.
-       ══════════════════════════════════════════════════════════ -->
-  <div class="bp-balance-widget" id="bpBalanceWidget">
-    <span class="bp-balance-label">Мой баланс</span>
-    <div class="bp-balance-value-wrap">
-      <input type="text" id="bpBalanceInput" class="bp-balance-input" inputmode="numeric" autocomplete="off" maxlength="7" value="0">
-      <span class="bp-balance-suffix">BP</span>
-    </div>
-    <button type="button" id="bpNewDayBtn" class="bp-newday-btn" title="Зафиксировать сегодняшний прогресс в баланс и начать новый день (задания сбросятся)"><span class="bp-newday-icon">☀</span>Новый день</button>
-    <button id="resetBtn" class="bp-reset-btn" title="Сбросить прогресс заданий. Если «Новый день» не был нажат — сегодняшние BP спишутся с баланса">
-      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M3 11a9 9 0 0 1 15.5-5.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        <path d="M21 13a9 9 0 0 1-15.5 5.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        <path d="M21 3v6h-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M3 21v-6h6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-    </button>
-  </div>
 
 <div class="total">
   <div class="total-split">
-    <div class="total-card card-done">
-      <div class="card-label">Выполнено</div>
-      <div class="card-value-row">
-        <span class="card-value" id="totalDisplay">0</span><span class="card-bp"><span class="card-bp-line">BONUS</span><span class="card-bp-line">POINT</span></span>
-      </div>
-      <div class="task-progress-wrap">
-        <div class="task-progress-bar">
-          <div class="task-progress-fill" id="taskProgressFill"></div>
+    <!-- Перенесено из верхней панели: персонаж / VIP / акция x2 / дата+онлайн -->
+    <div class="total-future-slot" id="totalFutureSlot">
+      <div class="left-group">
+        <div class="char-toggle-pill" id="charTogglePill" onclick="toggleCharPopup(event)" title="Переключить персонажа">
+          <span class="ctp-label" id="ctpLabel">Персонаж 1</span>
+          <span class="ctp-circle" id="ctpCircle">1</span>
         </div>
-        <div class="task-progress-label" id="taskProgressLabel">0 / 0 заданий</div>
+
+        <label class="toggle-switch">
+          <input id="vipCheckbox" type="checkbox">
+          <span class="switch-slider"></span>
+          <span class="toggle-btn toggle-btn-vip">⬡ VIP</span>
+        </label>
+        <label class="toggle-switch">
+          <input id="x2Checkbox" type="checkbox">
+          <span class="switch-slider"></span>
+          <span class="toggle-btn toggle-btn-x2">✦ Акция ×2</span>
+        </label>
       </div>
     </div>
-    <div class="total-divider"></div>
-    <div class="total-card card-left">
-      <div class="card-label">Осталось</div>
-      <div class="card-value-row">
-        <span class="card-value" id="remainingDisplay">324</span><span class="card-bp"><span class="card-bp-line">BONUS</span><span class="card-bp-line">POINT</span></span>
+
+    <div class="date-display" id="currentDate">
+      <span class="date-day" id="dateDayName"></span>
+      <span class="date-main" id="dateMainText">—</span>
+      <span class="date-online"><span class="online-dot-mini"></span><span id="onlineCount">—</span> онлайн</span>
+    </div>
+
+    <!-- Компактная группа "Выполнено / Осталось", прижата вправо -->
+    <div class="total-right-group">
+      <div class="total-card card-done">
+        <div class="card-value-row">
+          <span class="card-value" id="totalDisplay">0</span><span class="card-bp"><span class="card-bp-line">BP</span></span>
+        </div>
+        <span class="card-label">Заработано</span>
+        <div class="task-progress-wrap">
+          <div class="task-progress-bar">
+            <div class="task-progress-fill" id="taskProgressFill"></div>
+          </div>
+          <div class="task-progress-label" id="taskProgressLabel">0 / 0 заданий</div>
+        </div>
+      </div>
+      <div class="total-divider"></div>
+      <div class="total-card card-left">
+        <div class="card-value-row">
+          <span class="card-value" id="remainingDisplay">324</span><span class="card-bp"><span class="card-bp-line">BP</span></span>
+        </div>
+        <span class="card-label">Осталось</span>
       </div>
     </div>
   </div>
@@ -3526,7 +3729,13 @@ body.char2-active .filter-btn.active[data-col="col-fraction"]:hover {
 
 <div class="edit-mode-banner" id="editModeBanner">
     <div style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:14px;position:relative;flex-wrap:wrap;">
-      <span>✏️ &nbsp; РЕЖИМ РЕДАКТИРОВАНИЯ — ПЕРЕТАЩИТЕ ЗАДАНИЯ ДЛЯ ИЗМЕНЕНИЯ ПОРЯДКА</span>
+      <div class="legend-filters" style="display:inline-flex;align-items:center;gap:10px;flex-wrap:wrap;margin-right:auto;">
+      <button class="filter-btn active" data-col="col-easy"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;"><path d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="1.3"/></svg><span class="filter-btn-label">ЛЁГКИЕ</span></button>
+      <button class="filter-btn active" data-col="col-medium"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;"><path d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="1.3"/></svg><span class="filter-btn-label">СРЕДНИЕ</span></button>
+      <button class="filter-btn active" data-col="col-joint"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;"><path d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="1.3"/></svg><span class="filter-btn-label">СОВМЕСТНЫЕ</span></button>
+      <button class="filter-btn active" data-col="col-avoid"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;"><path d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="1.3"/></svg><span class="filter-btn-label">СЛОЖНЫЕ</span></button>
+      <button class="filter-btn active" data-col="col-fraction"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;"><path d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="1.3"/></svg><span class="filter-btn-label">ФРАКЦИОННЫЕ</span></button>
+      </div>
       <div style="display:inline-flex;align-items:center;gap:14px;flex-wrap:wrap;">
       <!-- Кнопка подсветки заданий (левее кнопки «По умолчанию») -->
       <div style="position:relative;display:inline-flex;align-items:center;">
@@ -3648,6 +3857,8 @@ body.char2-active .filter-btn.active[data-col="col-fraction"]:hover {
       </div>
     </div>
   </div>
+
+
 
 <div class="grid" id="tasksGrid">
   <!-- Легкие -->
@@ -4273,7 +4484,10 @@ loadHiddenColumns();
 
   function syncFilterBtnLabel(colId, text) {
     const btn = document.querySelector('.filter-btn[data-col="' + colId + '"]');
-    if (btn) btn.textContent = text.toUpperCase();
+    if (!btn) return;
+    const label = btn.querySelector('.filter-btn-label');
+    if (label) label.textContent = text.toUpperCase();
+    else btn.textContent = text.toUpperCase();
   }
 
   function saveTitle(h2) {
@@ -4571,7 +4785,7 @@ loadHiddenColumns();
       // Мини-вспышка кнопки — цвет под текущего персонажа
       const isChar2 = document.body.classList.contains('char2-active');
       const flashColor = isChar2 ? '#39ff6a' : '#00d2ff';
-      const flashBorder = isChar2 ? 'rgba(57,255,100,0.6)' : 'rgba(0,210,255,0.6)';
+      const flashBorder = isChar2 ? 'rgba(42,196,148,0.6)' : 'rgba(0,210,255,0.6)';
       editBtn.style.color = flashColor;
       editBtn.style.borderColor = flashBorder;
       setTimeout(() => {
@@ -4654,13 +4868,13 @@ loadHiddenColumns();
   width: 6px; height: 6px;
   border-radius: 50%;
   background: rgba(80, 255, 120, 0.75);
-  box-shadow: 0 0 5px rgba(57,255,100,0.8);
+  box-shadow: 0 0 5px rgba(42,196,148,0.8);
   animation: dotPulse 2s ease-in-out infinite alternate;
   flex-shrink: 0;
 }
 @keyframes dotPulse {
-  0%   { box-shadow: 0 0 3px rgba(57,255,100,0.6); opacity: 0.8; }
-  100% { box-shadow: 0 0 8px rgba(57,255,100,1); opacity: 1; }
+  0%   { box-shadow: 0 0 3px rgba(42,196,148,0.6); opacity: 0.8; }
+  100% { box-shadow: 0 0 8px rgba(42,196,148,1); opacity: 1; }
 }
 body.char2-active .date-online { color: rgba(100, 255, 140, 0.55); }
 
@@ -4718,10 +4932,10 @@ body.char2-active .date-online { color: rgba(100, 255, 140, 0.55); }
 }
 /* ── Персонаж 2: зелёный ── */
 body.char2-active .oum-box {
-  border-color: rgba(57, 255, 100, 0.45);
+  border-color: rgba(42,196,148, 0.45);
   box-shadow:
-    0 0 0 1px rgba(57,255,100,0.08) inset,
-    0 0 45px rgba(57,255,100,0.18),
+    0 0 0 1px rgba(42,196,148,0.08) inset,
+    0 0 45px rgba(42,196,148,0.18),
     0 24px 70px rgba(0,0,0,0.75);
 }
 .oum-header {
@@ -4733,7 +4947,7 @@ body.char2-active .oum-box {
   flex-shrink: 0;
 }
 body.char2-active .oum-header {
-  border-bottom-color: rgba(57,255,100,0.12);
+  border-bottom-color: rgba(42,196,148,0.12);
 }
 .oum-title-block {
   display: flex;
@@ -4754,9 +4968,9 @@ body.char2-active .oum-header {
   color: #00eeff;
 }
 body.char2-active .oum-icon {
-  border-color: rgba(57,255,100,0.5);
-  background: rgba(57,255,100,0.1);
-  box-shadow: 0 0 12px rgba(57,255,100,0.22);
+  border-color: rgba(42,196,148,0.5);
+  background: rgba(42,196,148,0.1);
+  box-shadow: 0 0 12px rgba(42,196,148,0.22);
   color: #39ff6a;
 }
 .oum-title {
@@ -4774,7 +4988,7 @@ body.char2-active .oum-title {
   background: linear-gradient(135deg, #39ff6a, #afffcc);
   -webkit-background-clip: text;
   background-clip: text;
-  filter: drop-shadow(0 0 6px rgba(57,255,100,0.5));
+  filter: drop-shadow(0 0 6px rgba(42,196,148,0.5));
 }
 .oum-subtitle {
   font-size: 0.68rem;
@@ -4821,12 +5035,12 @@ body.char2-active .oum-subtitle {
   scrollbar-color: rgba(0,200,255,0.25) transparent;
 }
 body.char2-active .oum-body {
-  scrollbar-color: rgba(57,255,100,0.22) transparent;
+  scrollbar-color: rgba(42,196,148,0.22) transparent;
 }
 .oum-body::-webkit-scrollbar { width: 4px; }
 .oum-body::-webkit-scrollbar-track { background: transparent; }
 .oum-body::-webkit-scrollbar-thumb { background: rgba(0,200,255,0.25); border-radius: 4px; }
-body.char2-active .oum-body::-webkit-scrollbar-thumb { background: rgba(57,255,100,0.22); }
+body.char2-active .oum-body::-webkit-scrollbar-thumb { background: rgba(42,196,148,0.22); }
 .oum-empty {
   font-family: monospace;
   font-size: 0.82rem;
@@ -4867,13 +5081,13 @@ body.char2-active .oum-empty {
   box-shadow: 0 0 10px rgba(0,200,255,0.1);
 }
 body.char2-active .oum-nick-item {
-  background: rgba(57,255,100,0.04);
-  border-color: rgba(57,255,100,0.1);
+  background: rgba(42,196,148,0.04);
+  border-color: rgba(42,196,148,0.1);
 }
 body.char2-active .oum-nick-item:hover {
-  background: rgba(57,255,100,0.09);
-  border-color: rgba(57,255,100,0.22);
-  box-shadow: 0 0 10px rgba(57,255,100,0.1);
+  background: rgba(42,196,148,0.09);
+  border-color: rgba(42,196,148,0.22);
+  box-shadow: 0 0 10px rgba(42,196,148,0.1);
 }
 .oum-nick-dot {
   width: 7px;
@@ -4885,8 +5099,8 @@ body.char2-active .oum-nick-item:hover {
   animation: dotPulse 2s ease-in-out infinite alternate;
 }
 body.char2-active .oum-nick-dot {
-  background: rgba(57,255,100,0.9);
-  box-shadow: 0 0 6px rgba(57,255,100,0.9);
+  background: rgba(42,196,148,0.9);
+  box-shadow: 0 0 6px rgba(42,196,148,0.9);
 }
 .oum-nick-name {
   font-family: monospace;
@@ -4911,7 +5125,7 @@ body.char2-active .oum-nick-name {
   flex-shrink: 0;
 }
 body.char2-active .oum-footer {
-  border-top-color: rgba(57,255,100,0.1);
+  border-top-color: rgba(42,196,148,0.1);
 }
 .oum-footer-count {
   font-family: monospace;
@@ -4923,7 +5137,7 @@ body.char2-active .oum-footer {
 }
 body.char2-active .oum-footer-count {
   color: #39ff6a;
-  text-shadow: 0 0 8px rgba(57,255,100,0.5);
+  text-shadow: 0 0 8px rgba(42,196,148,0.5);
 }
 .oum-footer-hint {
   font-size: 0.68rem;
@@ -5528,7 +5742,7 @@ document.getElementById('resetConfirmApply').addEventListener('click', () => {
 })();
 </script>
 
-<div class="cosmos-popup" id="cosmosPopup">
+<div class="cosmos-popup popup-below" id="cosmosPopup">
   <div class="cosmos-popup-text" id="cosmosPopupText">Включить анимацию космоса?</div>
   <div class="cosmos-popup-actions">
     <button type="button" class="cosmos-popup-btn cosmos-popup-btn-yes" id="cosmosYesBtn" onclick="confirmCosmosToggle(event)">Да</button>
@@ -5544,7 +5758,7 @@ document.getElementById('resetConfirmApply').addEventListener('click', () => {
   </div>
 </div>
 
-<div class="cosmos-popup" id="resetProgressPopup">
+<div class="cosmos-popup popup-below" id="resetProgressPopup">
   <div class="cosmos-popup-text">СБРОСИТЬ <span style="color:#ff5577;font-weight:900;text-shadow:0 0 8px rgba(255,60,100,0.6);">ПРОГРЕСС ЗАДАНИЙ</span>?<br><span style="font-weight:600;opacity:0.75;font-size:0.9em;">Если «Новый день» не был нажат — сегодняшние BP спишутся с баланса.</span></div>
   <div class="cosmos-popup-actions">
     <button type="button" class="cosmos-popup-btn cosmos-popup-btn-yes-danger" onclick="confirmResetProgress(event)">Да</button>
@@ -5552,7 +5766,7 @@ document.getElementById('resetConfirmApply').addEventListener('click', () => {
   </div>
 </div>
 
-<div class="cosmos-popup" id="bpNewDayPopup">
+<div class="cosmos-popup popup-below" id="bpNewDayPopup">
   <div class="cosmos-popup-text">Зафиксировать <span style="color:#ffd766;font-weight:900;text-shadow:0 0 8px rgba(255,190,30,0.6);">сегодняшний баланс</span> и начать новый день?<br><span style="font-weight:600;opacity:0.75;font-size:0.9em;">Все выполненные задания будут сброшены.</span></div>
   <div class="cosmos-popup-actions">
     <button type="button" class="cosmos-popup-btn cosmos-popup-btn-yes-newday" id="bpNewDayYesBtn" onclick="confirmBpNewDay(event)">Да</button>
@@ -5711,7 +5925,7 @@ document.getElementById('resetConfirmApply').addEventListener('click', () => {
     let left = rect.left + rect.width / 2 - popupW / 2;
     if (left < 8) left = 8;
     if (left + popupW > window.innerWidth - 8) left = window.innerWidth - popupW - 8;
-    const top = rect.top - popupH - 12;
+    const top = rect.bottom + 12;
     cosmosPopup.style.left = left + 'px';
     cosmosPopup.style.top = top + 'px';
     // Стрелка указывает на центр кнопки
@@ -5880,24 +6094,25 @@ document.getElementById('resetConfirmApply').addEventListener('click', () => {
 
       body.innerHTML = '<div class="om-list">' + servers.map(s => {
         let dotClass = s.online < 25 ? 'tier-red' : s.online < 500 ? 'tier-orange' : s.online < 1000 ? 'tier-yellow' : s.online < 2000 ? 'tier-cyan' : 'tier-green';
-        return `<div class="om-server-row" style="cursor:pointer;" onclick="pinServer('${s.name}','${s.emoji}',${s.online},'${dotClass}')" title="Закрепить на панели">
+        const isPinned = (window._pinnedServers || []).some(p => p.name === s.name);
+        return `<div class="om-server-row${isPinned ? ' is-pinned' : ''}" style="cursor:pointer;" onclick="pinServer('${s.name}','${s.emoji}',${s.online},'${dotClass}')" title="${isPinned ? 'Открепить' : 'Закрепить на панели (до 2 серверов)'}">
           <div class="om-dot ${dotClass}"></div>
           <div class="om-row-sep"></div>
           <div class="om-server-info">
-            <div class="om-server-name">${s.emoji} ${s.name}<span class="om-server-num">#${s.id}</span></div>
+            <div class="om-server-name">${s.emoji} ${s.name}<span class="om-server-num">#${s.id}</span>${isPinned ? '<span class="om-pin-badge">📌</span>' : ''}</div>
           </div>
           <div class="om-server-online ${dotClass}">${s.online.toLocaleString('ru-RU')}</div>
         </div>`;
       }).join('') + '</div>';
 
-      // Обновляем пин если он активен
-      if (window._pinnedServerName) {
-        const pinned = servers.find(s => s.name === window._pinnedServerName);
+      // Обновляем данные закреплённых серверов (их может быть 0, 1 или 2)
+      (window._pinnedServers || []).forEach(p => {
+        const pinned = servers.find(s => s.name === p.name);
         if (pinned) {
           let dc = pinned.online < 25 ? 'tier-red' : pinned.online < 500 ? 'tier-orange' : pinned.online < 1000 ? 'tier-yellow' : pinned.online < 2000 ? 'tier-cyan' : 'tier-green';
-          updatePinnedWidget(pinned.online, dc);
+          updatePinnedWidget(p.name, pinned.online, dc);
         }
-      }
+      });
 
     } catch(err) {
       body.innerHTML = '<div class="om-status-text om-error-text">❌ ОШИБКА ЗАГРУЗКИ</div>';
@@ -5913,41 +6128,83 @@ document.getElementById('resetConfirmApply').addEventListener('click', () => {
   // всегда показывал актуальный онлайн)
   setInterval(omLoad, 30000);
 
-  // ── PINNED SERVER ──
+  // ── PINNED SERVERS (до 2 шт.) ──
+  const PIN_STORAGE_KEY = 'pinned_servers_v2';
+  const MAX_PINS = 2;
   const TIER_COLORS = {
     'tier-red':    { color: 'rgba(255,80,90,0.95)',  shadow: 'rgba(255,40,60,0.6)',   bg: 'rgba(255,60,70,0.85)',  bgShadow: '0 0 7px 1px rgba(255,40,60,0.6)' },
     'tier-orange': { color: 'rgba(255,160,50,0.95)', shadow: 'rgba(255,130,20,0.6)',  bg: 'rgba(255,145,40,0.85)', bgShadow: '0 0 7px 1px rgba(255,130,20,0.6)' },
     'tier-yellow': { color: 'rgba(255,230,60,0.95)', shadow: 'rgba(255,210,20,0.6)',  bg: 'rgba(255,225,50,0.85)', bgShadow: '0 0 7px 1px rgba(255,210,20,0.6)' },
     'tier-cyan':   { color: 'rgba(0,215,250,0.95)',  shadow: 'rgba(0,210,255,0.65)',  bg: 'rgba(0,210,245,0.85)',  bgShadow: '0 0 7px 1px rgba(0,210,255,0.6)' },
-    'tier-green':  { color: 'rgba(57,235,105,0.95)', shadow: 'rgba(40,230,90,0.65)',  bg: 'rgba(50,230,100,0.85)', bgShadow: '0 0 7px 1px rgba(40,230,90,0.6)' },
+    'tier-green':  { color: 'rgba(57,235,105,0.95)', shadow: 'rgba(30,182,130,0.65)',  bg: 'rgba(42,196,148,0.85)', bgShadow: '0 0 7px 1px rgba(30,182,130,0.6)' },
   };
 
-  window.updatePinnedWidget = function(online, dotClass) {
+  // window._pinnedServers — массив вида [{name, emoji}], максимум 2 элемента
+  window._pinnedServers = [];
+
+  function savePinnedServers() {
+    localStorage.setItem(PIN_STORAGE_KEY, JSON.stringify(window._pinnedServers));
+  }
+
+  // Полная перерисовка виджетов закреплённых серверов (0, 1 или 2 шт.)
+  function renderPinnedWidgets() {
+    const wrap = document.getElementById('pinnedServersWrap');
+    if (!wrap) return;
+    wrap.classList.toggle('has-pins', window._pinnedServers.length > 0);
+    wrap.innerHTML = window._pinnedServers.map(p => `
+      <div class="pinned-server-widget" data-name="${p.name}" title="Нажмите для обновления">
+        <span class="pinned-server-name">${p.name}</span>
+        <span class="pinned-server-meta">
+          <span class="pinned-dot" data-role="dot"></span>
+          <span class="pinned-server-count" data-role="count">—</span>
+        </span>
+      </div>
+    `).join('');
+  }
+
+  // Обновление кружка/цифры у конкретного закреплённого сервера по имени
+  window.updatePinnedWidget = function(name, online, dotClass) {
+    const wrap = document.getElementById('pinnedServersWrap');
+    if (!wrap) return;
+    const widget = wrap.querySelector(`.pinned-server-widget[data-name="${CSS.escape(name)}"]`);
+    if (!widget) return;
     const tc = TIER_COLORS[dotClass] || TIER_COLORS['tier-cyan'];
-    const dot = document.getElementById('pinnedDot');
-    const count = document.getElementById('pinnedServerCount');
+    const dot = widget.querySelector('[data-role="dot"]');
+    const count = widget.querySelector('[data-role="count"]');
     if (dot) { dot.style.background = tc.bg; dot.style.boxShadow = tc.bgShadow; }
-    if (count) { count.style.color = tc.color; count.style.textShadow = `0 0 10px ${tc.shadow}`; count.textContent = online.toLocaleString('ru-RU'); }
+    if (count) { count.style.color = '#ffffff'; count.style.textShadow = `0 0 8px rgba(255,255,255,0.5)`; count.textContent = online.toLocaleString('ru-RU'); }
   };
 
+  // Клик по серверу в списке мониторинга — закрепить/открепить.
+  // 0, 1 или 2 сервера могут быть закреплены одновременно; при попытке
+  // закрепить третий — вытесняется тот, что был закреплён раньше всех (FIFO).
   window.pinServer = function(name, emoji, online, dotClass) {
-    window._pinnedServerName = name;
-    const widget = document.getElementById('pinnedServer');
-    const nameEl = document.getElementById('pinnedServerName');
-    if (nameEl) nameEl.textContent = emoji + ' ' + name;
-    updatePinnedWidget(online, dotClass);
-    widget.classList.add('visible');
-    localStorage.setItem('pinned_server_v1', JSON.stringify({ name, emoji }));
-    closeOnlineMonitor();
+    const idx = window._pinnedServers.findIndex(p => p.name === name);
+    if (idx !== -1) {
+      // Уже закреплён — открепляем по повторному клику
+      window._pinnedServers.splice(idx, 1);
+    } else {
+      if (window._pinnedServers.length >= MAX_PINS) window._pinnedServers.shift();
+      window._pinnedServers.push({ name, emoji });
+    }
+    savePinnedServers();
+    renderPinnedWidgets();
+    if (window._pinnedServers.some(p => p.name === name)) {
+      window.updatePinnedWidget(name, online, dotClass);
+    }
+    // Монитор остаётся открытым — так удобнее закрепить сразу два сервера
+    // и сразу видеть подсветку выбранных строк в списке.
+    omLoad();
   };
 
-  // Клик по виджету закреплённого сервера — обновить данные (не открывать монитор)
-  document.getElementById('pinnedServer').addEventListener('click', function(e) {
-    if (document.getElementById('pinnedCloseBtn').contains(e.target)) return; // крестик обрабатывается ниже
-    e.stopPropagation();
-    if (!window._pinnedServerName) return;
-    // Анимация "обновления" — мигаем счётчиком
-    const countEl = document.getElementById('pinnedServerCount');
+  // Делегирование кликов по виджетам (они пересоздаются при рендере).
+  // Открепление теперь только через повторный клик по серверу в
+  // окне мониторинга — здесь клик просто обновляет данные.
+  document.getElementById('pinnedServersWrap').addEventListener('click', function(e) {
+    const widget = e.target.closest('.pinned-server-widget');
+    if (!widget) return;
+
+    const countEl = widget.querySelector('[data-role="count"]');
     if (countEl) {
       countEl.style.transition = 'opacity 0.15s';
       countEl.style.opacity = '0.3';
@@ -5956,32 +6213,20 @@ document.getElementById('resetConfirmApply').addEventListener('click', () => {
     omLoad();
   });
 
-  // Кнопка ✕ — открепить (не открывать монитор)
-  document.getElementById('pinnedCloseBtn').addEventListener('click', function(e) {
-    e.stopPropagation();
-    window._pinnedServerName = null;
-    document.getElementById('pinnedServer').classList.remove('visible');
-    localStorage.removeItem('pinned_server_v1');
-  });
-
-  // Восстановление закреплённого сервера из localStorage (всегда, при загрузке)
+  // Восстановление закреплённых серверов из localStorage (всегда, при загрузке)
   window.restorePinnedServer = function() {
     try {
-      const raw = localStorage.getItem('pinned_server_v1');
-      const widget = document.getElementById('pinnedServer');
-      const nameEl = document.getElementById('pinnedServerName');
+      const raw = localStorage.getItem(PIN_STORAGE_KEY);
       if (!raw) {
-        // Если в облаке пин был удалён — скрываем виджет
-        window._pinnedServerName = null;
-        if (widget) widget.classList.remove('visible');
+        // Если в облаке пины были удалены — очищаем виджеты
+        window._pinnedServers = [];
+        renderPinnedWidgets();
         return;
       }
-      const { name, emoji } = JSON.parse(raw);
-      if (!name) return;
-      window._pinnedServerName = name;
-      if (nameEl) nameEl.textContent = emoji + ' ' + name;
-      if (widget) widget.classList.add('visible');
-      setTimeout(omLoad, 300);
+      const parsed = JSON.parse(raw);
+      window._pinnedServers = Array.isArray(parsed) ? parsed.slice(0, MAX_PINS) : [];
+      renderPinnedWidgets();
+      if (window._pinnedServers.length) setTimeout(omLoad, 300);
     } catch(e) {}
   };
   window.restorePinnedServer();
@@ -6102,14 +6347,6 @@ document.getElementById('resetConfirmApply').addEventListener('click', () => {
     Аккаунт
   </button>
   <div style="height:1px;background:rgba(255,255,255,0.12);"></div>
-  <button onclick="openCustomization(event)" class="profile-settings-btn">
-    <svg width="13" height="13" viewBox="0 0 13 13" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity:0.75;flex-shrink:0;">
-      <circle cx="6.5" cy="6.5" r="2" stroke="currentColor" stroke-width="1.3"/>
-      <path d="M6.5 1v1M6.5 11v1M1 6.5h1M11 6.5h1M2.636 2.636l.707.707M9.657 9.657l.707.707M2.636 10.364l.707-.707M9.657 3.343l.707-.707" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
-    </svg>
-    Кастомизация
-  </button>
-  <div style="height:1px;background:rgba(255,255,255,0.12);"></div>
   <button id="logoutBtn" class="profile-logout-btn">
     <svg width="13" height="13" viewBox="0 0 13 13" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity:0.85;flex-shrink:0;">
       <path d="M5 2H2.5A1.5 1.5 0 001 3.5v6A1.5 1.5 0 002.5 11H5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
@@ -6134,11 +6371,11 @@ document.getElementById('resetConfirmApply').addEventListener('click', () => {
   /* Цвет кнопки Да — зелёный (переключение на персонажа 2) */
   .char-popup .char-popup-yes-green {
     background: linear-gradient(135deg, rgba(30,200,80,0.30), rgba(0,160,50,0.22));
-    border-color: rgba(57,255,100,0.65);
+    border-color: rgba(42,196,148,0.65);
     color: #aaffc0;
   }
   .char-popup .char-popup-yes-green:hover {
-    box-shadow: 0 0 14px rgba(57,255,100,0.5);
+    box-shadow: 0 0 14px rgba(42,196,148,0.5);
     transform: scale(1.05);
   }
   /* Стрелка попапа — переопределяем для char-popup (берёт стиль cosmos-popup::after) */
@@ -6185,7 +6422,7 @@ document.getElementById('resetConfirmApply').addEventListener('click', () => {
     if (willShow) {
       const targetChar = (typeof currentChar !== 'undefined' ? currentChar : 1) === 1 ? 2 : 1;
       if (targetChar === 2) {
-        charPopupText.innerHTML = 'ВЫБРАТЬ <span style="color:#39ff64;font-weight:900;text-shadow:0 0 8px rgba(57,255,100,0.7);">ПЕРСОНАЖ 2</span>';
+        charPopupText.innerHTML = 'ВЫБРАТЬ <span style="color:#2ac496;font-weight:900;text-shadow:0 0 8px rgba(42,196,148,0.7);">ПЕРСОНАЖ 2</span>';
         charPopupYesBtn.className = 'cosmos-popup-btn char-popup-yes-green';
       } else {
         charPopupText.innerHTML = 'ВЫБРАТЬ <span style="color:#00d2ff;font-weight:900;text-shadow:0 0 8px rgba(0,200,255,0.7);">ПЕРСОНАЖ 1</span>';
@@ -6233,7 +6470,7 @@ document.getElementById('resetConfirmApply').addEventListener('click', () => {
     let left = rect.left + rect.width / 2 - popupW / 2;
     if (left < 8) left = 8;
     if (left + popupW > window.innerWidth - 8) left = window.innerWidth - popupW - 8;
-    const top = rect.top - popupH - 12;
+    const top = rect.bottom + 12;
     resetPopup.style.left = left + 'px';
     resetPopup.style.top = top + 'px';
     const btnCenterX = rect.left + rect.width / 2;
@@ -6415,7 +6652,7 @@ document.getElementById('resetConfirmApply').addEventListener('click', () => {
     let left = rect.left + rect.width / 2 - popupW / 2;
     if (left < 8) left = 8;
     if (left + popupW > window.innerWidth - 8) left = window.innerWidth - popupW - 8;
-    const top = rect.top - popupH - 12;
+    const top = rect.bottom + 12;
     newDayPopup.style.left = left + 'px';
     newDayPopup.style.top = top + 'px';
     const btnCenterX = rect.left + rect.width / 2;
@@ -6502,5 +6739,6 @@ document.getElementById('resetConfirmApply').addEventListener('click', () => {
   window._bpBalanceRender = renderBalance;
 })();
 </script>
+</div>
 </body>
 </html>
