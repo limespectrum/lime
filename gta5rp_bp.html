@@ -148,6 +148,12 @@
     flex-wrap: wrap;
     justify-self: end;
   }
+  .bp-vipx2-row,
+  .bp-account-row,
+  .bp-balance-row1,
+  .bp-balance-row2 {
+    display: contents;
+  }
   @media (max-width: 1300px) {
     .center-actions {
       display: flex;
@@ -2284,8 +2290,17 @@ body.char2-active .filter-btn.active[data-col="col-fraction"]:hover {
   @media (max-width: 600px) {
     .om-list { grid-template-columns: 1fr 1fr; }
   }
-  @media (max-width: 380px) {
-    .om-list { grid-template-columns: 1fr; }
+  @media (max-width: 700px) {
+    .om-box { width: min(560px, calc(100vw - 16px)); max-height: min(90vh, calc(100vh - 24px)); }
+    .om-header { padding: 18px 16px 14px; }
+    .om-title { font-size: 1.05rem; letter-spacing: 3px; }
+    .om-icon { width: 40px; height: 40px; }
+    .om-body { padding: 14px 12px 16px; }
+    .om-list { grid-template-columns: 1fr !important; gap: 8px; }
+    .om-server-row { padding: 10px 12px; gap: 8px; }
+    .om-server-name { font-size: 0.85rem; gap: 5px; }
+    .om-server-num { font-size: 0.62rem; }
+    .om-server-online { font-size: 0.98rem; }
   }
   .om-server-row {
     display: flex;
@@ -2602,14 +2617,66 @@ body.char2-active .filter-btn.active[data-col="col-fraction"]:hover {
   }
 
   @media (max-width: 700px) {
+    .bp-balance-anchor {
+      height: auto !important;
+      display: flex;
+      justify-content: center;
+      margin-bottom: 14px;
+    }
     .bp-balance-widget {
+      position: relative !important;
+      top: auto !important;
+      left: auto !important;
+      transform: none !important;
       gap: 10px;
       padding: 9px 16px 9px 16px;
       flex-wrap: wrap;
       justify-content: center;
       max-width: 92vw;
+      margin: 0 auto;
     }
     .bp-balance-input { font-size: 1.4rem; width: 6.2ch; }
+    .bp-balance-widget {
+      flex-direction: column;
+    }
+    .bp-balance-row1,
+    .bp-balance-row2 {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+    }
+  }
+
+  /* === Мобильная раскладка: логин сверху, аккаунт/мониторинг/космос строкой ниже === */
+  @media (max-width: 700px) {
+    .right-group {
+      flex-direction: column !important;
+      align-items: center !important;
+      gap: 10px !important;
+    }
+    .bp-account-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      gap: 14px;
+    }
+  }
+
+  /* === Мобильная раскладка: персонаж сверху, VIP + Акция x2 строкой ниже, затем дата === */
+  @media (max-width: 700px) {
+    .left-group {
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+    .bp-vipx2-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+    }
   }
 
   /* ══════════════════════════════════════════════════════════════
@@ -3956,8 +4023,11 @@ body.char2-active .filter-btn.active[data-col="col-fraction"]:hover {
         <input type="text" id="bpBalanceInput" class="bp-balance-input" inputmode="numeric" autocomplete="off" maxlength="7" value="0">
         <span class="bp-balance-suffix">BP</span>
       </div>
+      <div class="bp-balance-row1">
       <button type="button" id="bpNewDayBtn" class="bp-newday-btn" title="Зафиксировать сегодняшний прогресс в баланс и начать новый день (задания сбросятся)"><span class="bp-newday-icon">☀</span>Новый день</button>
       <button type="button" id="bpStatsBtn" class="bp-stats-btn" title="Статистика заработка BP по дням"><span class="bp-stats-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 17l6-6 4 4 7-8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 7h5v5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 21h18" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.5"/></svg></span>Статистика</button>
+      </div>
+      <div class="bp-balance-row2">
       <button type="button" id="bpCustomizeBtn" class="bp-customize-btn" onclick="openCustomization(event)" title="Кастомизация">
         <svg width="15" height="15" viewBox="0 0 13 13" fill="none" xmlns="http://www.w3.org/2000/svg">
           <circle cx="6.5" cy="6.5" r="2" stroke="currentColor" stroke-width="1.3"/>
@@ -3972,6 +4042,7 @@ body.char2-active .filter-btn.active[data-col="col-fraction"]:hover {
           <path d="M3 21v-6h6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </button>
+      </div>
     </div>
   </div>
 
@@ -4001,6 +4072,7 @@ body.char2-active .filter-btn.active[data-col="col-fraction"]:hover {
         cursor: default;
         white-space: nowrap;
       "></span>
+      <div class="bp-account-row">
       <!-- Profile dropdown wrapper -->
       <div id="profileDropdownWrap" style="position:relative;display:inline-block;">
         <button id="profileBtn" title="Профиль" style="
@@ -4075,6 +4147,7 @@ body.char2-active .filter-btn.active[data-col="col-fraction"]:hover {
             <circle cx="13" cy="13" r="1" fill="white" opacity="0.6"/>
           </svg>
         </button>
+      </div>
       </div>
 
       <style>
@@ -4247,6 +4320,7 @@ body.char2-active .filter-btn.active[data-col="col-fraction"]:hover {
           <span class="ctp-circle" id="ctpCircle">1</span>
         </div>
 
+        <div class="bp-vipx2-row">
         <label class="toggle-switch">
           <input id="vipCheckbox" type="checkbox">
           <span class="switch-slider"></span>
@@ -4257,6 +4331,7 @@ body.char2-active .filter-btn.active[data-col="col-fraction"]:hover {
           <span class="switch-slider"></span>
           <span class="toggle-btn toggle-btn-x2">✦ Акция ×2</span>
         </label>
+        </div>
       </div>
     </div>
 
