@@ -2427,6 +2427,54 @@ body.char2-active .filter-btn.active[data-col="col-fraction"]:hover {
   .bp-newday-btn:active {
     transform: scale(0.96);
   }
+  .bp-stats-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 18px;
+    border-radius: 30px;
+    border: 1.5px solid rgba(90,200,255,0.45);
+    background: rgba(6,14,28,0.55);
+    color: #b8e6ff;
+    font-size: 0.74rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    white-space: nowrap;
+    font-family: monospace;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+  }
+  .bp-stats-icon { filter: drop-shadow(0 0 4px rgba(90,200,255,0.8)); display:inline-flex; }
+  .bp-stats-btn:hover {
+    background: rgba(6,14,28,0.75);
+    border-color: rgba(110,215,255,0.8);
+    box-shadow: 0 0 12px rgba(90,200,255,0.35);
+    transform: scale(1.04);
+  }
+  .bp-stats-btn:active { transform: scale(0.96); }
+  .bp-stats-btn.active {
+    background: rgba(20,60,100,0.55);
+    border-color: rgba(110,215,255,1);
+    box-shadow: 0 0 14px rgba(90,200,255,0.5);
+  }
+  body.char2-active .bp-stats-btn {
+    border-color: rgba(60,255,210,0.5);
+    color: #baffe8;
+  }
+  body.char2-active .bp-stats-btn:hover {
+    border-color: rgba(90,255,220,0.85);
+    box-shadow: 0 0 12px rgba(0,230,190,0.4);
+  }
+  body.char2-active .bp-stats-btn.active {
+    background: rgba(0,60,50,0.55);
+    border-color: rgba(90,255,220,1);
+    box-shadow: 0 0 14px rgba(0,230,190,0.5);
+  }
+
   .bp-customize-btn {
     display: inline-flex;
     align-items: center;
@@ -2560,6 +2608,495 @@ body.char2-active .filter-btn.active[data-col="col-fraction"]:hover {
       max-width: 92vw;
     }
     .bp-balance-input { font-size: 1.4rem; width: 6.2ch; }
+  }
+
+  /* ══════════════════════════════════════════════════════════════
+     📊 СТАТИСТИКА BP ПО ДНЯМ — крупное выпадающее окно с календарём
+     ══════════════════════════════════════════════════════════════ */
+  .bp-stats-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(3,7,16,0.65);
+    backdrop-filter: blur(2px);
+    z-index: 9998;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.2s ease, visibility 0.2s;
+  }
+  .bp-stats-backdrop.show {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+  }
+  .bp-stats-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -48%) scale(0.96);
+    width: min(760px, 96vw);
+    max-height: 92vh;
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(180deg, rgba(12,20,38,0.98), rgba(7,12,24,0.99));
+    border: 1.5px solid rgba(90,200,255,0.35);
+    border-radius: 18px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 40px rgba(60,150,255,0.15);
+    z-index: 9999;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.22s ease, visibility 0.22s, transform 0.22s ease;
+    overflow: hidden;
+    font-family: monospace;
+  }
+  .bp-stats-modal.show {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  body.char2-active .bp-stats-modal {
+    border-color: rgba(60,255,210,0.35);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 40px rgba(0,220,190,0.15);
+  }
+  .bp-stats-modal-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 18px 12px;
+    border-bottom: 1px solid rgba(90,200,255,0.18);
+    flex-shrink: 0;
+  }
+  body.char2-active .bp-stats-modal-header { border-bottom-color: rgba(60,255,210,0.18); }
+  .bp-stats-nav-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(90,200,255,0.4);
+    background: rgba(90,200,255,0.08);
+    color: #b8e6ff;
+    font-size: 1.1rem;
+    font-weight: 900;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    transition: all 0.18s ease;
+    flex-shrink: 0;
+    line-height: 1;
+  }
+  .bp-stats-nav-btn:hover:not(:disabled) {
+    background: rgba(90,200,255,0.2);
+    border-color: rgba(110,215,255,0.9);
+    box-shadow: 0 0 12px rgba(90,200,255,0.4);
+    transform: scale(1.08);
+  }
+  .bp-stats-nav-btn:disabled {
+    opacity: 0.25;
+    cursor: default;
+  }
+  body.char2-active .bp-stats-nav-btn { border-color: rgba(60,255,210,0.4); background: rgba(60,255,210,0.08); color: #baffe8; }
+  body.char2-active .bp-stats-nav-btn:hover:not(:disabled) { background: rgba(60,255,210,0.2); border-color: rgba(90,255,220,0.9); box-shadow: 0 0 12px rgba(0,230,190,0.4); }
+  .bp-stats-month-title {
+    flex: 1;
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: 900;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    background: linear-gradient(135deg, #6fe0ff, #a8c8ff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  body.char2-active .bp-stats-month-title {
+    background: linear-gradient(135deg, #6fffd8, #9dffb0);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .bp-stats-close-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(255,90,120,0.5);
+    background: rgba(255,50,90,0.1);
+    color: #ffc7d3;
+    font-size: 0.85rem;
+    font-weight: 900;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    transition: all 0.18s ease;
+    flex-shrink: 0;
+    line-height: 1;
+  }
+  .bp-stats-close-btn:hover {
+    background: rgba(255,50,90,0.25);
+    border-color: rgba(255,110,140,1);
+    box-shadow: 0 0 12px rgba(255,60,100,0.4);
+    color: #fff;
+  }
+  .bp-stats-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 10px;
+    padding: 14px 20px 0;
+    flex-shrink: 0;
+  }
+  .bp-stats-weekdays span {
+    text-align: center;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+    color: rgba(160,200,255,0.55);
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  body.char2-active .bp-stats-weekdays span { color: rgba(150,255,220,0.55); }
+  .bp-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 10px;
+    padding: 10px 20px 16px;
+    overflow-y: auto;
+    flex: 1 1 auto;
+  }
+  .bp-stats-day {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 6px;
+    height: 84px;
+    box-sizing: border-box;
+    border-radius: 10px;
+    border: 1px solid rgba(90,200,255,0.18);
+    background: rgba(90,200,255,0.04);
+    padding: 8px 3px 12px;
+    transition: all 0.18s ease;
+  }
+  .bp-stats-day.bp-stats-empty-cell {
+    border: none;
+    background: transparent;
+  }
+  .bp-stats-day.has-value {
+    border-color: rgba(90,220,140,0.55);
+    background: rgba(60,200,120,0.1);
+    box-shadow: 0 0 10px rgba(60,200,120,0.15);
+  }
+  .bp-stats-day.zero-value {
+    border-color: rgba(255,90,90,0.55);
+    background: rgba(230,60,60,0.1);
+    box-shadow: 0 0 10px rgba(255,60,60,0.15);
+  }
+  .bp-stats-day.today {
+    border-color: rgba(255,159,28,0.8);
+    box-shadow: 0 0 12px rgba(255,159,28,0.35);
+  }
+  .bp-stats-day.locked {
+    opacity: 0.32;
+    background: repeating-linear-gradient(135deg, rgba(255,255,255,0.02) 0 6px, rgba(255,255,255,0.045) 6px 12px);
+  }
+  body.char2-active .bp-stats-day { border-color: rgba(60,255,210,0.18); background: rgba(60,255,210,0.04); }
+  body.char2-active .bp-stats-day.has-value { border-color: rgba(90,220,140,0.55); background: rgba(60,200,120,0.1); }
+  body.char2-active .bp-stats-day.zero-value { border-color: rgba(255,90,90,0.55); background: rgba(230,60,60,0.1); }
+  body.char2-active .bp-stats-day.today { border-color: rgba(255,159,28,0.8); box-shadow: 0 0 12px rgba(255,159,28,0.35); }
+  .bp-stats-day-num {
+    font-size: 1.1rem;
+    font-weight: 900;
+    color: rgba(200,220,255,0.6);
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .bp-stats-day.today .bp-stats-day-num { color: #ff9f1c; }
+  body.char2-active .bp-stats-day.today .bp-stats-day-num { color: #ff9f1c; }
+  .bp-stats-day-input {
+    width: 88%;
+    box-sizing: border-box;
+    margin: auto 0;
+    background: transparent;
+    border: none;
+    border-bottom: 1.5px solid rgba(0,210,255,0.35);
+    color: transparent;
+    background-image: linear-gradient(135deg, #a8f0ff, #cc99ff, #ff9ecf);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    caret-color: #d9c9ff;
+    filter: drop-shadow(0 0 4px rgba(180,120,255,0.45));
+    font-family: monospace;
+    font-weight: 900;
+    font-size: 1.65rem;
+    text-align: center;
+    padding: 2px 0;
+    outline: none;
+    transition: border-color 0.15s ease;
+  }
+  .bp-stats-day-input::placeholder { color: rgba(160,190,230,0.35); -webkit-text-fill-color: rgba(160,190,230,0.35); background-image:none; font-size: 0.7em; font-weight: 700; }
+  .bp-stats-day-input:focus { border-bottom-color: rgba(180,80,255,0.85); }
+  body.char2-active .bp-stats-day-input {
+    border-bottom-color: rgba(42,196,148,0.4);
+    background-image: linear-gradient(135deg, #a0e8d4, #29c2a0, #00d8c8);
+    caret-color: #baffe0;
+    filter: drop-shadow(0 0 4px rgba(57,255,150,0.45));
+  }
+  body.char2-active .bp-stats-day-input:focus { border-bottom-color: rgba(0,220,210,0.9); }
+  .bp-stats-day:disabled,
+  .bp-stats-day-input:disabled {
+    cursor: default;
+  }
+  .bp-stats-day.locked .bp-stats-day-input { pointer-events: none; }
+  .bp-stats-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 20px 16px;
+    flex-shrink: 0;
+    border-top: 1px solid rgba(90,200,255,0.18);
+    margin-top: 6px;
+  }
+  body.char2-active .bp-stats-footer { border-top-color: rgba(60,255,210,0.18); }
+  .bp-stats-footer-label {
+    font-size: 1rem;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: rgba(190,220,255,0.6);
+  }
+  body.char2-active .bp-stats-footer-label { color: rgba(170,255,220,0.6); }
+  .bp-stats-footer-value {
+    font-size: 1.6rem;
+    font-weight: 900;
+    font-family: monospace;
+    background: linear-gradient(135deg, #a8f0ff, #cc99ff, #ff9ecf);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  body.char2-active .bp-stats-footer-value {
+    background: linear-gradient(135deg, #a0e8d4, #29c2a0, #00d8c8);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  @media (max-width: 560px) {
+    .bp-stats-modal { width: 97vw; max-height: 92vh; }
+    .bp-stats-weekdays { gap: 7px; padding: 10px 12px 0; }
+    .bp-stats-grid { gap: 7px; padding: 8px 12px 12px; }
+    .bp-stats-day { height: 68px; gap: 4px; padding: 6px 3px 10px; }
+    .bp-stats-day-num { font-size: 0.92rem; font-weight: 900; }
+    .bp-stats-day-input { font-size: 1.3rem; }
+    .bp-stats-month-title { font-size: 1.15rem; letter-spacing: 1.5px; }
+    .bp-stats-footer-label { font-size: 0.85rem; }
+    .bp-stats-footer-value { font-size: 1.3rem; }
+  }
+
+  /* ── МОДАЛКА "НОВЫЙ ДЕНЬ" — фиксация заработанных за сутки BP в
+     нужный день статистики (учитывает игровые сутки сервера 7:00–7:00) */
+  .bp-newday-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -48%) scale(0.96);
+    width: min(500px, 94vw);
+    max-height: 92vh;
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(180deg, rgba(12,20,38,0.98), rgba(7,12,24,0.99));
+    border: 1.5px solid rgba(255,180,60,0.4);
+    border-radius: 18px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 40px rgba(255,160,30,0.18);
+    z-index: 9999;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.22s ease, visibility 0.22s, transform 0.22s ease;
+    overflow: hidden;
+    font-family: monospace;
+  }
+  .bp-newday-modal.show {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  .bp-newday-modal-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 18px 12px;
+    border-bottom: 1px solid rgba(255,180,60,0.22);
+    flex-shrink: 0;
+  }
+  .bp-newday-modal-title {
+    flex: 1;
+    font-size: 1.2rem;
+    font-weight: 900;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #ffd28a;
+    text-shadow: 0 0 10px rgba(255,170,30,0.4);
+  }
+  .bp-newday-modal-body {
+    padding: 8px 26px 4px;
+    text-align: center;
+  }
+  .bp-newday-earned-label {
+    font-size: 0.92rem;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: rgba(190,220,255,0.7);
+    margin-top: 8px;
+  }
+  .bp-newday-earned-value {
+    font-size: 2.8rem;
+    font-weight: 900;
+    font-family: monospace;
+    background: linear-gradient(135deg, #ffe0a0, #ffb84d, #ff9f1c);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    margin: 6px 0 16px;
+    filter: drop-shadow(0 0 10px rgba(255,160,30,0.35));
+  }
+  .bp-newday-save-label {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: rgba(220,228,248,0.9);
+    margin-bottom: 14px;
+    line-height: 1.4;
+  }
+  .bp-newday-days {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-bottom: 14px;
+  }
+  .bp-newday-day {
+    position: relative;
+    flex: 1;
+    max-width: 190px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 18px 8px 14px;
+    min-height: 122px;
+    box-sizing: border-box;
+    border-radius: 14px;
+    border: 1.5px solid rgba(90,200,255,0.22);
+    background: rgba(90,200,255,0.05);
+    cursor: pointer;
+    transition: all 0.18s ease;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .bp-newday-day:hover {
+    border-color: rgba(90,200,255,0.5);
+    background: rgba(90,200,255,0.1);
+  }
+  .bp-newday-day-label {
+    font-size: 0.8rem;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: rgba(190,220,255,0.6);
+  }
+  .bp-newday-day-num {
+    font-size: 2rem;
+    font-weight: 900;
+    color: rgba(220,232,255,0.9);
+    line-height: 1.1;
+  }
+  .bp-newday-day-month {
+    font-size: 0.88rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: rgba(190,220,255,0.55);
+  }
+  .bp-newday-day-badge {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 0.72rem;
+    font-weight: 900;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: #cbb8ff;
+    text-shadow: 0 0 6px rgba(140,110,255,0.8);
+    margin-top: 2px;
+    height: 16px;
+    visibility: hidden;
+  }
+  .bp-newday-day.is-today {
+    border-color: rgba(255,159,28,0.85);
+    background: rgba(255,159,28,0.08);
+    box-shadow: 0 0 14px rgba(255,159,28,0.3);
+  }
+  .bp-newday-day.is-today .bp-newday-day-num { color: #ff9f1c; }
+  .bp-newday-day.is-today .bp-newday-day-label { color: rgba(255,180,80,0.85); }
+  .bp-newday-day.selected {
+    border-color: rgba(140,110,255,0.85);
+    box-shadow: 0 0 0 2px rgba(140,110,255,0.35), 0 0 14px rgba(140,110,255,0.4);
+    background: rgba(120,90,255,0.12);
+  }
+  .bp-newday-day.selected .bp-newday-day-badge {
+    visibility: visible;
+  }
+  .bp-newday-hint {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: rgba(190,210,240,0.6);
+    line-height: 1.45;
+    margin-bottom: 12px;
+  }
+  .bp-newday-note {
+    font-size: 0.86rem;
+    font-weight: 700;
+    color: rgba(220,228,248,0.75);
+    line-height: 1.5;
+    margin-bottom: 4px;
+  }
+  .bp-newday-note-accent {
+    color: #7cc8ff;
+    font-weight: 900;
+    text-shadow: 0 0 6px rgba(80,180,255,0.45);
+  }
+  .bp-newday-note-warn {
+    color: #ff8a9a;
+    font-weight: 900;
+    text-shadow: 0 0 6px rgba(255,60,100,0.5);
+  }
+  .bp-newday-modal-actions {
+    display: flex;
+    gap: 10px;
+    padding: 16px 26px 20px;
+    flex-shrink: 0;
+  }
+  .bp-newday-modal-actions .cosmos-popup-btn {
+    flex: 1;
+    padding: 12px 14px;
+    font-size: 0.88rem;
+  }
+  @media (max-width: 480px) {
+    .bp-newday-earned-value { font-size: 2.2rem; }
+    .bp-newday-day { min-height: 104px; padding: 14px 6px 12px; }
+    .bp-newday-day-num { font-size: 1.6rem; }
+    .bp-newday-day-badge { font-size: 0.64rem; }
+    .bp-newday-note { font-size: 0.78rem; }
+    .bp-newday-hint { font-size: 0.72rem; }
   }
 
   /* ── PINNED SERVERS (до 2 шт.) — закреплены в верхнем правом углу
@@ -2969,7 +3506,10 @@ body.char2-active .filter-btn.active[data-col="col-fraction"]:hover {
     'pinned_servers_v2',
     // 🧪 ЭКСПЕРИМЕНТАЛЬНО: баланс BP персонажа (см. блок скрипта в конце body)
     'bp_balance_v1',
-    'bp_balance_v1_char2'
+    'bp_balance_v1_char2',
+    // 📊 Статистика BP по дням (см. блок "Новый день" / модалка статистики)
+    'bp_daily_stats_v1',
+    'bp_daily_stats_v1_char2'
   ];
   const SYNC_KEY_SET = new Set(SYNC_KEYS);
   let currentUid = null;
@@ -3175,6 +3715,17 @@ body.char2-active .filter-btn.active[data-col="col-fraction"]:hover {
     if (user) {
       const nameEl = document.getElementById('userNameDisplay');
       currentUid = user.uid;
+
+      // Дата регистрации аккаунта (для ограничения "Статистики BP" —
+      // редактировать дни можно не раньше даты регистрации профиля).
+      try {
+        if (user.metadata && user.metadata.creationTime) {
+          const created = new Date(user.metadata.creationTime);
+          if (!isNaN(created.getTime())) {
+            localStorage.setItem('bp_reg_date', created.toISOString());
+          }
+        }
+      } catch(e) {}
 
       // Настоящий логин — из users/{uid}/login (тот, что человек выбрал при
       // регистрации в login.html), а не производная от email.
@@ -3404,6 +3955,7 @@ body.char2-active .filter-btn.active[data-col="col-fraction"]:hover {
         <span class="bp-balance-suffix">BP</span>
       </div>
       <button type="button" id="bpNewDayBtn" class="bp-newday-btn" title="Зафиксировать сегодняшний прогресс в баланс и начать новый день (задания сбросятся)"><span class="bp-newday-icon">☀</span>Новый день</button>
+      <button type="button" id="bpStatsBtn" class="bp-stats-btn" title="Статистика заработка BP по дням"><span class="bp-stats-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 17l6-6 4 4 7-8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 7h5v5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 21h18" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.5"/></svg></span>Статистика</button>
       <button type="button" id="bpCustomizeBtn" class="bp-customize-btn" onclick="openCustomization(event)" title="Кастомизация">
         <svg width="15" height="15" viewBox="0 0 13 13" fill="none" xmlns="http://www.w3.org/2000/svg">
           <circle cx="6.5" cy="6.5" r="2" stroke="currentColor" stroke-width="1.3"/>
@@ -5794,11 +6346,42 @@ document.getElementById('resetConfirmApply').addEventListener('click', () => {
   </div>
 </div>
 
-<div class="cosmos-popup popup-below" id="bpNewDayPopup">
-  <div class="cosmos-popup-text">Зафиксировать <span style="color:#ffd766;font-weight:900;text-shadow:0 0 8px rgba(255,190,30,0.6);">сегодняшний баланс</span> и начать новый день?<br><span style="font-weight:600;opacity:0.75;font-size:0.9em;">Все выполненные задания будут сброшены.</span></div>
-  <div class="cosmos-popup-actions">
-    <button type="button" class="cosmos-popup-btn cosmos-popup-btn-yes-newday" id="bpNewDayYesBtn" onclick="confirmBpNewDay(event)">Да</button>
-    <button type="button" class="cosmos-popup-btn cosmos-popup-btn-no" onclick="closeBpNewDayPopup(event)">Нет</button>
+<div class="bp-stats-backdrop" id="bpNewDayBackdrop"></div>
+<div class="bp-newday-modal" id="bpNewDayModal">
+  <div class="bp-newday-modal-header">
+    <span class="bp-newday-modal-title">☀ Новый день</span>
+    <button type="button" class="bp-stats-close-btn" id="bpNewDayModalCloseBtn" title="Закрыть">✕</button>
+  </div>
+  <div class="bp-newday-modal-body">
+    <div class="bp-newday-earned-label">Сегодня вы заработали</div>
+    <div class="bp-newday-earned-value" id="bpNewDayEarnedValue">0 BP</div>
+    <div class="bp-newday-save-label">Сохраним это значение для статистики на:</div>
+    <div class="bp-newday-days" id="bpNewDayDays"></div>
+    <div class="bp-newday-hint">Сутки на сервере идут с 7:00 до 7:00 по МСК — если играли ночью (по своему времени), выберите нужную дату сами.</div>
+    <div class="bp-newday-note">Заработанные BP добавятся к <span class="bp-newday-note-accent">вашему балансу</span>, а <span class="bp-newday-note-warn">все выполненные задания будут сброшены</span>.</div>
+  </div>
+  <div class="bp-newday-modal-actions">
+    <button type="button" class="cosmos-popup-btn cosmos-popup-btn-yes-newday" id="bpNewDayConfirmBtn">Сохранить</button>
+    <button type="button" class="cosmos-popup-btn cosmos-popup-btn-no" id="bpNewDayCancelBtn">Отмена</button>
+  </div>
+</div>
+
+<!-- 📊 СТАТИСТИКА BP ПО ДНЯМ -->
+<div class="bp-stats-backdrop" id="bpStatsBackdrop"></div>
+<div class="bp-stats-modal" id="bpStatsModal">
+  <div class="bp-stats-modal-header">
+    <button type="button" class="bp-stats-nav-btn" id="bpStatsPrevBtn" title="Предыдущий месяц">‹</button>
+    <div class="bp-stats-month-title" id="bpStatsMonthTitle">ИЮЛЬ 2026</div>
+    <button type="button" class="bp-stats-nav-btn" id="bpStatsNextBtn" title="Следующий месяц">›</button>
+    <button type="button" class="bp-stats-close-btn" id="bpStatsCloseBtn" title="Закрыть">✕</button>
+  </div>
+  <div class="bp-stats-weekdays">
+    <span>ПН</span><span>ВТ</span><span>СР</span><span>ЧТ</span><span>ПТ</span><span>СБ</span><span>ВС</span>
+  </div>
+  <div class="bp-stats-grid" id="bpStatsGrid"></div>
+  <div class="bp-stats-footer">
+    <span class="bp-stats-footer-label">Итого за месяц</span>
+    <span class="bp-stats-footer-value" id="bpStatsMonthTotal">0 BP</span>
   </div>
 </div>
 
@@ -6670,56 +7253,143 @@ document.getElementById('resetConfirmApply').addEventListener('click', () => {
   }
 
   const newDayBtn = document.getElementById('bpNewDayBtn');
-  const newDayPopup = document.getElementById('bpNewDayPopup');
+  const newDayModal = document.getElementById('bpNewDayModal');
+  const newDayBackdrop = document.getElementById('bpNewDayBackdrop');
+  const newDayEarnedValueEl = document.getElementById('bpNewDayEarnedValue');
+  const newDayDaysEl = document.getElementById('bpNewDayDays');
+  const newDayConfirmBtn = document.getElementById('bpNewDayConfirmBtn');
+  const newDayCancelBtn = document.getElementById('bpNewDayCancelBtn');
+  const newDayCloseBtn = document.getElementById('bpNewDayModalCloseBtn');
 
-  function positionBpNewDayPopup() {
-    if (!newDayBtn || !newDayPopup) return;
-    const rect = newDayBtn.getBoundingClientRect();
-    const popupW = newDayPopup.offsetWidth || 260;
-    const popupH = newDayPopup.offsetHeight || 100;
-    let left = rect.left + rect.width / 2 - popupW / 2;
-    if (left < 8) left = 8;
-    if (left + popupW > window.innerWidth - 8) left = window.innerWidth - popupW - 8;
-    const top = rect.bottom + 12;
-    newDayPopup.style.left = left + 'px';
-    newDayPopup.style.top = top + 'px';
-    const btnCenterX = rect.left + rect.width / 2;
-    const arrowOffset = btnCenterX - left;
-    newDayPopup.style.setProperty('--arrow-offset', arrowOffset + 'px');
+  const NEWDAY_MONTHS_RU = ['ЯНВАРЯ','ФЕВРАЛЯ','МАРТА','АПРЕЛЯ','МАЯ','ИЮНЯ','ИЮЛЯ','АВГУСТА','СЕНТЯБРЯ','ОКТЯБРЯ','НОЯБРЯ','ДЕКАБРЯ'];
+  const NEWDAY_STATS_KEY_PREFIX = 'bp_daily_stats_v1'; // должно совпадать с STATS_KEY_PREFIX в блоке статистики
+  const NEWDAY_MAX_BP_PER_DAY = 1000; // тот же лимит, что и в гриде статистики
+
+  function newDayPad2(n) { return String(n).padStart(2, '0'); }
+  function newDayStripTime(d) { return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
+  function newDayDateKey(d) { return `${d.getFullYear()}-${newDayPad2(d.getMonth() + 1)}-${newDayPad2(d.getDate())}`; }
+
+  // Текущий час по московскому времени (сервер сбрасывает сутки в 7:00 МСК
+  // независимо от часового пояса игрока — для Дальнего Востока это может
+  // быть 13:00-14:00 по местному, поэтому нельзя брать локальные часы браузера).
+  function getMoscowHour() {
+    try {
+      const fmt = new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Moscow', hour: '2-digit', hour12: false });
+      const hourPart = fmt.formatToParts(new Date()).find(p => p.type === 'hour');
+      if (hourPart) {
+        const h = parseInt(hourPart.value, 10);
+        if (!isNaN(h)) return h % 24; // '24' у некоторых движков вместо '00'
+      }
+    } catch(e) {}
+    return new Date().getHours(); // фоллбек, если Intl с таймзонами недоступен
   }
 
-  window.addEventListener('scroll', function() {
-    if (newDayPopup && newDayPopup.classList.contains('show')) positionBpNewDayPopup();
-  }, true);
-  window.addEventListener('resize', function() {
-    if (newDayPopup && newDayPopup.classList.contains('show')) positionBpNewDayPopup();
-  });
+  let selectedNewDayDate = null; // Date — выбранный день для сохранения
 
-  if (newDayBtn && newDayPopup) {
+  // Записывает заработанные BP в статистику выбранного дня — ЗАМЕНЯЕТ
+  // текущее значение, а не прибавляет к нему. "Сегодня заработано" — это
+  // уже накопительный итог за сутки (карточка «Выполнено»), поэтому при
+  // повторном нажатии "Новый день" в те же сутки значение должно просто
+  // перезаписаться на актуальное, а не складываться со старым.
+  function saveEarnedToStats(dateObj, amount) {
+    try {
+      const suffix = (typeof charSuffix === 'function') ? charSuffix(typeof currentChar !== 'undefined' ? currentChar : 1) : '';
+      const key = NEWDAY_STATS_KEY_PREFIX + suffix;
+      const raw = localStorage.getItem(key);
+      const obj = raw ? JSON.parse(raw) : {};
+      const dk = newDayDateKey(dateObj);
+      obj[dk] = Math.min(NEWDAY_MAX_BP_PER_DAY, Math.max(0, amount));
+      localStorage.setItem(key, JSON.stringify(obj));
+    } catch(e) {}
+  }
+
+  function buildNewDayCell(dateObj, label, isRealToday) {
+    const cell = document.createElement('div');
+    cell.className = 'bp-newday-day' + (isRealToday ? ' is-today' : '');
+    cell.dataset.dateKey = newDayDateKey(dateObj);
+    cell.innerHTML =
+      `<span class="bp-newday-day-label">${label}</span>` +
+      `<span class="bp-newday-day-num">${dateObj.getDate()}</span>` +
+      `<span class="bp-newday-day-month">${NEWDAY_MONTHS_RU[dateObj.getMonth()]}</span>` +
+      `<span class="bp-newday-day-badge">✓ Выбрано</span>`;
+    cell.addEventListener('click', () => {
+      selectedNewDayDate = dateObj;
+      newDayDaysEl.querySelectorAll('.bp-newday-day').forEach(c => c.classList.remove('selected'));
+      cell.classList.add('selected');
+    });
+    return cell;
+  }
+
+  function openNewDayModal() {
+    if (!newDayModal || !newDayBackdrop) return;
+    window.PopupManager.closeAllExcept('bpNewDayModal');
+
+    const earned = getTodayEarned();
+    newDayEarnedValueEl.textContent = earned.toLocaleString('ru-RU') + ' BP';
+
+    const realToday = newDayStripTime(new Date());
+    const yesterday = new Date(realToday.getFullYear(), realToday.getMonth(), realToday.getDate() - 1);
+
+    newDayDaysEl.innerHTML = '';
+    const yesterdayCell = buildNewDayCell(yesterday, 'Вчера', false);
+    const todayCell = buildNewDayCell(realToday, 'Сегодня', true);
+    newDayDaysEl.appendChild(yesterdayCell);
+    newDayDaysEl.appendChild(todayCell);
+
+    // До 7 утра по МСК сервер ещё считает эти сутки "вчерашними" — по
+    // умолчанию предлагаем сохранить на вчера, но пользователь может
+    // выбрать сам. Важно: смотрим именно московское время сервера,
+    // а не локальное время игрока (в других часовых поясах "7 утра МСК"
+    // может быть, например, 13:00 или 14:00 по местному).
+    const isBeforeServerReset = getMoscowHour() < 7;
+    if (isBeforeServerReset) {
+      selectedNewDayDate = yesterday;
+      yesterdayCell.classList.add('selected');
+    } else {
+      selectedNewDayDate = realToday;
+      todayCell.classList.add('selected');
+    }
+
+    newDayBackdrop.classList.add('show');
+    newDayModal.classList.add('show');
+  }
+
+  function closeNewDayModal() {
+    if (!newDayModal || !newDayBackdrop) return;
+    newDayModal.classList.remove('show');
+    newDayBackdrop.classList.remove('show');
+  }
+
+  if (newDayBtn && newDayModal) {
     newDayBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      const willShow = !newDayPopup.classList.contains('show');
-      if (willShow) {
-        window.PopupManager.closeAllExcept('bpNewDayPopup');
-        positionBpNewDayPopup();
-        newDayPopup.classList.add('show');
-      } else {
-        newDayPopup.classList.remove('show');
-      }
+      openNewDayModal();
     });
 
     window.closeBpNewDayPopup = function(e) {
       if (e) e.stopPropagation();
-      newDayPopup.classList.remove('show');
+      closeNewDayModal();
     };
-    window.PopupManager.register('bpNewDayPopup', window.closeBpNewDayPopup);
+    window.PopupManager.register('bpNewDayModal', window.closeBpNewDayPopup);
+
+    if (newDayCancelBtn) newDayCancelBtn.addEventListener('click', (e) => { e.stopPropagation(); closeNewDayModal(); });
+    if (newDayCloseBtn) newDayCloseBtn.addEventListener('click', (e) => { e.stopPropagation(); closeNewDayModal(); });
+    newDayBackdrop.addEventListener('click', () => closeNewDayModal());
 
     window.confirmBpNewDay = function(e) {
       if (e) e.stopPropagation();
-      newDayPopup.classList.remove('show');
+
+      const earned = getTodayEarned();
+      const targetDate = selectedNewDayDate || newDayStripTime(new Date());
+
+      // Записываем заработанное в статистику выбранного дня
+      saveEarnedToStats(targetDate, earned);
+      if (typeof window._bpStatsRenderGrid === 'function') window._bpStatsRenderGrid();
 
       // Фиксируем сегодняшний прогресс в базовый баланс
-      setBaseBalance(getBaseBalance() + getTodayEarned());
+      setBaseBalance(getBaseBalance() + earned);
+
+      closeNewDayModal();
 
       // Сбрасываем задания — так же, как это делает центральная кнопка сброса
       if (typeof qa === 'function' && typeof saveState === 'function') {
@@ -6739,15 +7409,10 @@ document.getElementById('resetConfirmApply').addEventListener('click', () => {
       newDayBtn.style.borderColor = 'rgba(255,220,80,1)';
       setTimeout(() => { newDayBtn.style.color = ''; newDayBtn.style.borderColor = ''; }, 700);
     };
-
-    document.addEventListener('click', function(e) {
-      if (!newDayPopup.classList.contains('show')) return;
-      if (newDayPopup.contains(e.target) || newDayBtn.contains(e.target)) return;
-      newDayPopup.classList.remove('show');
-    });
+    if (newDayConfirmBtn) newDayConfirmBtn.addEventListener('click', window.confirmBpNewDay);
 
     document.addEventListener('keydown', function(e) {
-      if (e.key === 'Escape') newDayPopup.classList.remove('show');
+      if (e.key === 'Escape' && newDayModal.classList.contains('show')) closeNewDayModal();
     });
   }
 
@@ -6765,6 +7430,273 @@ document.getElementById('resetConfirmApply').addEventListener('click', () => {
   // Первичная отрисовка при загрузке страницы
   renderBalance();
   window._bpBalanceRender = renderBalance;
+})();
+</script>
+
+<!-- ════════════════════════════════════════════════════════════════
+     📊 СТАТИСТИКА BP ПО ДНЯМ — календарь, куда вручную вписывается
+     сумма заработанных BP за каждый день. Хранится отдельно для
+     каждого персонажа. Редактировать можно начиная с даты регистрации
+     профиля (берётся из Firebase Auth), либо с 15.07.2026, если дата
+     регистрации почему-то не определена.
+════════════════════════════════════════════════════════════════ -->
+<script>
+(function(){
+  const STATS_KEY_PREFIX = 'bp_daily_stats_v1'; // + charSuffix(currentChar)
+  const FALLBACK_START = new Date(2026, 6, 15); // 15 июля 2026 (месяц 0-индекс)
+  const MAX_BP_PER_DAY = 1000; // нельзя вписать больше 1000 BP за один день
+  const MONTH_NAMES_RU = ['ЯНВАРЬ','ФЕВРАЛЬ','МАРТ','АПРЕЛЬ','МАЙ','ИЮНЬ','ИЮЛЬ','АВГУСТ','СЕНТЯБРЬ','ОКТЯБРЬ','НОЯБРЬ','ДЕКАБРЬ'];
+
+  function statsKey() {
+    const suffix = (typeof charSuffix === 'function')
+      ? charSuffix(typeof currentChar !== 'undefined' ? currentChar : 1)
+      : '';
+    return STATS_KEY_PREFIX + suffix;
+  }
+
+  function loadStatsData() {
+    try {
+      const raw = localStorage.getItem(statsKey());
+      const obj = raw ? JSON.parse(raw) : {};
+      return (obj && typeof obj === 'object') ? obj : {};
+    } catch(e) { return {}; }
+  }
+
+  function saveStatsData(obj) {
+    try { localStorage.setItem(statsKey(), JSON.stringify(obj)); } catch(e) {}
+  }
+
+  function pad2(n) { return String(n).padStart(2, '0'); }
+
+  function dateKey(y, m, d) { return `${y}-${pad2(m + 1)}-${pad2(d)}`; }
+
+  function stripTime(d) { return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
+
+  function getEarliestAllowedDate() {
+    try {
+      const raw = localStorage.getItem('bp_reg_date');
+      if (raw) {
+        const d = new Date(raw);
+        if (!isNaN(d.getTime())) {
+          const stripped = stripTime(d);
+          // Не пускаем раньше FALLBACK_START в любом случае.
+          return stripped < FALLBACK_START ? FALLBACK_START : stripped;
+        }
+      }
+    } catch(e) {}
+    return FALLBACK_START;
+  }
+
+  const modal = document.getElementById('bpStatsModal');
+  const backdrop = document.getElementById('bpStatsBackdrop');
+  const grid = document.getElementById('bpStatsGrid');
+  const monthTitle = document.getElementById('bpStatsMonthTitle');
+  const monthTotalEl = document.getElementById('bpStatsMonthTotal');
+  const prevBtn = document.getElementById('bpStatsPrevBtn');
+  const nextBtn = document.getElementById('bpStatsNextBtn');
+  const closeBtn = document.getElementById('bpStatsCloseBtn');
+  const statsBtn = document.getElementById('bpStatsBtn');
+
+  if (!modal || !grid || !statsBtn) return;
+
+  let today = stripTime(new Date());
+  let maxAllowedDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1); // сегодня + 1 день (завтра) — крайний срок записи
+  let viewYear = today.getFullYear();
+  let viewMonth = today.getMonth(); // 0-индекс
+
+  // Автозаполнение нулём дней, которые уже закончились, но пользователь
+  // ничего не внёс — считаем невнесённый день как 0 BP, как только сутки
+  // истекли (независимо от того, открывал человек статистику или нет).
+  function autoFillPastDaysForSuffix(suffix) {
+    try {
+      const key = STATS_KEY_PREFIX + suffix;
+      const raw = localStorage.getItem(key);
+      const obj = raw ? JSON.parse(raw) : {};
+      if (!obj || typeof obj !== 'object') return false;
+      const earliest = getEarliestAllowedDate();
+      const cur = new Date(earliest);
+      const now = stripTime(new Date());
+      let changed = false;
+      while (cur < now) {
+        const k = dateKey(cur.getFullYear(), cur.getMonth(), cur.getDate());
+        if (obj[k] === undefined || obj[k] === null || obj[k] === '') {
+          obj[k] = 0;
+          changed = true;
+        }
+        cur.setDate(cur.getDate() + 1);
+      }
+      if (changed) localStorage.setItem(key, JSON.stringify(obj));
+      return changed;
+    } catch(e) { return false; }
+  }
+
+  function autoFillPastDays() {
+    const changed1 = autoFillPastDaysForSuffix('');
+    const changed2 = autoFillPastDaysForSuffix('_char2');
+    return changed1 || changed2;
+  }
+
+  // Раз в минуту проверяем, не наступили ли новые сутки (пока страница
+  // открыта) — если да, "закрываем" вчерашний день нулём и обновляем грид.
+  autoFillPastDays();
+  setInterval(() => {
+    const now = stripTime(new Date());
+    if (now.getTime() !== today.getTime()) {
+      today = now;
+      maxAllowedDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
+      autoFillPastDays();
+      if (modal.classList.contains('show')) renderGrid();
+    }
+  }, 60000);
+
+  function renderGrid() {
+    const earliest = getEarliestAllowedDate();
+    const data = loadStatsData();
+
+    monthTitle.textContent = `${MONTH_NAMES_RU[viewMonth]} ${viewYear}`;
+
+    // Блокируем "назад", если открыт месяц, в котором лежит earliest-дата
+    const atEarliestMonth = (viewYear === earliest.getFullYear() && viewMonth === earliest.getMonth());
+    prevBtn.disabled = atEarliestMonth || (viewYear < earliest.getFullYear()) ||
+      (viewYear === earliest.getFullYear() && viewMonth <= earliest.getMonth());
+
+    const firstOfMonth = new Date(viewYear, viewMonth, 1);
+    const jsDay = firstOfMonth.getDay(); // 0=вс..6=сб
+    const leadingBlanks = (jsDay + 6) % 7; // понедельник = 0
+    const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+
+    let html = '';
+    for (let i = 0; i < leadingBlanks; i++) {
+      html += '<div class="bp-stats-day bp-stats-empty-cell"></div>';
+    }
+
+    let monthTotal = 0;
+    for (let d = 1; d <= daysInMonth; d++) {
+      const cellDate = new Date(viewYear, viewMonth, d);
+      const key = dateKey(viewYear, viewMonth, d);
+      const locked = cellDate < earliest || cellDate > maxAllowedDate;
+      const isToday = cellDate.getTime() === today.getTime();
+      const rawVal = data[key];
+      const hasValue = rawVal !== undefined && rawVal !== null && rawVal !== '' && !isNaN(parseInt(rawVal, 10));
+      if (hasValue) monthTotal += parseInt(rawVal, 10);
+
+      const numVal = hasValue ? parseInt(rawVal, 10) : null;
+      const classes = ['bp-stats-day'];
+      if (locked) classes.push('locked');
+      if (isToday) classes.push('today');
+      if (hasValue) classes.push(numVal === 0 ? 'zero-value' : 'has-value');
+
+      html += `<div class="${classes.join(' ')}">` +
+        `<span class="bp-stats-day-num">${d}</span>` +
+        `<input type="text" inputmode="numeric" autocomplete="off" maxlength="4" class="bp-stats-day-input" data-date="${key}" ${locked ? 'disabled' : ''} placeholder="—" value="${hasValue ? numVal : ''}">` +
+        `</div>`;
+    }
+
+    grid.innerHTML = html;
+    monthTotalEl.textContent = monthTotal.toLocaleString('ru-RU') + ' BP';
+  }
+
+  // Сохранение значения при изменении поля дня (делегирование событий)
+  grid.addEventListener('change', (e) => {
+    const inp = e.target;
+    if (!inp.matches('.bp-stats-day-input')) return;
+    const key = inp.dataset.date;
+    if (!key) return;
+    const data = loadStatsData();
+    const cleaned = inp.value.replace(/[^0-9]/g, '');
+    const cell = inp.closest('.bp-stats-day');
+    if (cleaned === '') {
+      delete data[key];
+      cell.classList.remove('has-value', 'zero-value');
+    } else {
+      const n = Math.min(MAX_BP_PER_DAY, parseInt(cleaned, 10));
+      data[key] = n;
+      inp.value = n;
+      cell.classList.remove('has-value', 'zero-value');
+      cell.classList.add(n === 0 ? 'zero-value' : 'has-value');
+    }
+    saveStatsData(data);
+    // Пересчитываем итог месяца без полной перерисовки грида
+    let monthTotal = 0;
+    Object.keys(data).forEach(k => {
+      if (k.startsWith(`${viewYear}-${pad2(viewMonth + 1)}-`)) {
+        const v = parseInt(data[k], 10);
+        if (!isNaN(v)) monthTotal += v;
+      }
+    });
+    monthTotalEl.textContent = monthTotal.toLocaleString('ru-RU') + ' BP';
+  });
+
+  grid.addEventListener('input', (e) => {
+    const inp = e.target;
+    if (!inp.matches('.bp-stats-day-input')) return;
+    let cleaned = inp.value.replace(/[^0-9]/g, '').slice(0, 4);
+    if (cleaned !== '' && parseInt(cleaned, 10) > MAX_BP_PER_DAY) cleaned = String(MAX_BP_PER_DAY);
+    if (cleaned !== inp.value) inp.value = cleaned;
+  });
+
+  grid.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && e.target.matches('.bp-stats-day-input')) {
+      e.preventDefault();
+      e.target.blur();
+    }
+  });
+
+  function openStatsModal() {
+    window.PopupManager.closeAllExcept('bpStatsModal');
+    const now = stripTime(new Date());
+    if (now.getTime() !== today.getTime()) {
+      today = now;
+      maxAllowedDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
+    }
+    autoFillPastDays();
+    renderGrid();
+    backdrop.classList.add('show');
+    modal.classList.add('show');
+    statsBtn.classList.add('active');
+  }
+
+  function closeStatsModal() {
+    backdrop.classList.remove('show');
+    modal.classList.remove('show');
+    statsBtn.classList.remove('active');
+  }
+
+  window.PopupManager.register('bpStatsModal', closeStatsModal);
+
+  statsBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (modal.classList.contains('show')) {
+      closeStatsModal();
+    } else {
+      openStatsModal();
+    }
+  });
+
+  closeBtn.addEventListener('click', (e) => { e.stopPropagation(); closeStatsModal(); });
+  backdrop.addEventListener('click', () => { closeStatsModal(); });
+  modal.addEventListener('click', (e) => { e.stopPropagation(); });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal.classList.contains('show')) closeStatsModal();
+  });
+
+  prevBtn.addEventListener('click', () => {
+    if (prevBtn.disabled) return;
+    viewMonth--;
+    if (viewMonth < 0) { viewMonth = 11; viewYear--; }
+    renderGrid();
+  });
+
+  nextBtn.addEventListener('click', () => {
+    viewMonth++;
+    if (viewMonth > 11) { viewMonth = 0; viewYear++; }
+    renderGrid();
+  });
+
+  // Даём доступ извне (кнопка "Новый день"), чтобы обновить грид сразу
+  // после записи заработанных BP в статистику выбранного дня.
+  window._bpStatsRenderGrid = renderGrid;
 })();
 </script>
 </div>
